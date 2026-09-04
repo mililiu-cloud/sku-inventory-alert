@@ -104,7 +104,7 @@
   th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align:center; white-space:nowrap; }
   thead th { position: sticky; top:0; background: #f7f8fb; color:#374151; z-index:3; font-weight:700;
              font-size:11px; text-transform:uppercase; letter-spacing:0.02em; border-bottom:1px solid var(--border); }
-  td.name-cell, th.name-cell { text-align:center; white-space:normal; max-width:220px; }
+  td.name-cell, th.name-cell { text-align:center; white-space:nowrap; }
   tbody tr { transition: background 0.1s; }
   tbody tr:nth-child(even) { background: #fbfcfe; }
   tbody tr:hover { background: var(--blue-light); }
@@ -117,11 +117,15 @@
   .flag { background: var(--amber-bg) !important; color: var(--amber); font-weight:700; border-radius:6px; }
 
   #wideTable th.sticky, #wideTable td.sticky,
-  #vertTable th.sticky, #vertTable td.sticky { position: sticky; background: #fff; z-index:2; }
-  #wideTable thead th.sticky, #vertTable thead th.sticky { z-index:4; background:#f7f8fb; }
-  #wideTable tbody tr:nth-child(even) td.sticky, #vertTable tbody tr:nth-child(even) td.sticky { background:#fbfcfe; }
-  #wideTable tbody tr:hover td.sticky, #vertTable tbody tr:hover td.sticky { background: var(--blue-light); }
-  #vertTable td.sticky, #vertTable th.sticky { box-shadow: 2px 0 4px rgba(16,24,40,0.04); }
+  #vertTable th.sticky, #vertTable td.sticky,
+  .risk-table th.sticky, .risk-table td.sticky { position: sticky; background: #fff; z-index:2; }
+  #wideTable thead th.sticky, #vertTable thead th.sticky, .risk-table thead th.sticky { z-index:4; background:#f7f8fb; }
+  #wideTable tbody tr:nth-child(even) td.sticky, #vertTable tbody tr:nth-child(even) td.sticky,
+  .risk-table tbody tr:nth-child(even) td.sticky { background:#fbfcfe; }
+  #wideTable tbody tr:hover td.sticky, #vertTable tbody tr:hover td.sticky,
+  .risk-table tbody tr:hover td.sticky { background: var(--blue-light); }
+  #vertTable td.sticky, #vertTable th.sticky,
+  .risk-table td.sticky, .risk-table th.sticky { box-shadow: 2px 0 4px rgba(16,24,40,0.04); }
   #wideTable .sk0 { font-weight:700; }
   .wh-group-a { background:#eef3ff; color:#1d4ed8; }
   .wh-group-b { background:#f3eefe; color:#7c3aed; }
@@ -376,7 +380,7 @@ function alertCode(val){
 // re-creating thousands of DOM nodes on every keystroke -- this is what actually fixes the
 // "顿一下" stutter, since destroy+recreate of a large table is the expensive part, not the filter
 // logic itself.
-const N_STICKY_V = 4;
+const N_STICKY_V = 5;
 function renderVerticalHead(){
   const t = I18N[LANG];
   const thead = document.querySelector('#vertTable thead');
@@ -809,12 +813,14 @@ function fcAvgCell(r){
   return `${mOk ? m : '-'} / ${wOk ? w : '-'}`;
 }
 
+const N_STICKY_RISK = 4;  // System / 仓库 / 易仓SKU / SKU名称
 function renderRiskLists(){
   const t = I18N[LANG];
   const el = document.getElementById('riskLists');
   const selected = selectedMeetingRegion();
   const regions = selected ? [selected] : REGION_ORDER;
   const html = [];
+  const renderedTableIds = [];
   regions.forEach(region=>{
     const rows = DATA.vrows.filter(r => regionOf(r[0], r[1]) === region && alertCode(r[18]) === 'ALERT');
     rows.sort((a, b) => a[15] - b[15]);
@@ -822,8 +828,11 @@ function renderRiskLists(){
     if (!rows.length){
       html.push(`<div class="risk-empty">${esc(t.riskEmpty)}</div>`);
     } else {
-      html.push('<div class="table-wrap"><table class="risk-table"><thead><tr>' +
-        t.riskHeaders.map(h => `<th>${esc(h)}</th>`).join('') + '</tr></thead><tbody>');
+      const tableId = 'riskTable_' + region;
+      renderedTableIds.push(tableId);
+      html.push(`<div class="table-wrap"><table class="risk-table" id="${tableId}"><thead><tr>` +
+        t.riskHeaders.map((h, i) => `<th${i < N_STICKY_RISK ? ` class="sticky rk${i}"` : ''}>${esc(h)}</th>`).join('') +
+        '</tr></thead><tbody>');
       rows.forEach(r=>{
         const hist = r[11], soh = r[12], iti = r[13], doc = r[15], eta = r[14];
         let itiCell = esc(iti);
@@ -832,8 +841,9 @@ function renderRiskLists(){
           itiCell = `<span class="iti-link" data-key="${esc(key)}" data-sys="${esc(r[0])}" data-wh="${esc(r[1])}" data-sku="${esc(r[3])}" data-total="${iti}">${iti}</span>`;
         }
         const badge = alertBadgeHtml(r[18]);
-        html.push(`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[3])}</td>` +
-          `<td class="name-cell">${esc(r[4])}</td><td>${esc(fcAvgCell(r))}</td><td>${esc(hist)}</td>` +
+        html.push(`<tr><td class="sticky rk0">${esc(r[0])}</td><td class="sticky rk1">${esc(r[1])}</td>` +
+          `<td class="sticky rk2">${esc(r[3])}</td><td class="sticky rk3 name-cell">${esc(r[4])}</td>` +
+          `<td>${esc(fcAvgCell(r))}</td><td>${esc(hist)}</td>` +
           `<td>${esc(soh)}</td><td>${itiCell}</td>` +
           `<td><b>${esc(doc)}</b></td><td>${esc(eta) || '--'}</td><td>${badge || esc(r[18])}</td></tr>`);
       });
@@ -842,6 +852,7 @@ function renderRiskLists(){
     html.push('</div>');
   });
   el.innerHTML = html.join('');
+  renderedTableIds.forEach(id => applyStickyOffsets(id, N_STICKY_RISK, 'rk'));
 }
 
 function renderMeeting(){
@@ -878,6 +889,7 @@ function setLang(lang){
   renderVerticalHead();
   applyVerticalFilters();
   populateHorizontalSelects();
+  renderWideHead();
   applyHorizontalFilter();
   renderMeeting();
   renderFootnotes();
