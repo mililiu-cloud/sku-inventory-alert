@@ -67,6 +67,7 @@
   .meeting-section-head select { background: #fff; border: 1px solid var(--border); color: var(--text);
               padding: 6px 12px; border-radius: 8px; font-size: 12.5px; outline: none; }
   .meeting-section-head select:focus { border-color: var(--blue); }
+  .meeting-section-filters { display: flex; align-items: center; gap: 10px; }
 
   .region-bar-row { display: flex; align-items: center; gap: 14px; padding: 8px 0; }
   .region-bar-label { width: 190px; flex-shrink: 0; font-size: 12.5px; font-weight: 700; color: var(--text); }
@@ -228,7 +229,10 @@
       <div class="meeting-section">
         <div class="meeting-section-head">
           <div class="meeting-section-title" data-i18n="meetingRegionTitle">区域告警占比</div>
-          <select id="meetingRegion"></select>
+          <div class="meeting-section-filters">
+            <select id="meetingRegion"></select>
+            <select id="meetingWarehouse"></select>
+          </div>
         </div>
         <div id="regionBars"></div>
       </div>
@@ -267,7 +271,7 @@ const I18N = {
     navVertical: "库存明细 · 竖版", navHorizontal: "SKU透视 · 横版", navMeeting: "周会汇报",
     navSectionMeta: "数据说明", navFootnotes: "取数逻辑说明", exportBtn: "导出 Excel",
     meetingRegionTitle: "区域告警占比", meetingRiskTitle: "本周优先处理清单",
-    regionFilterAll: "全部区域",
+    regionFilterAll: "全部区域", meetingWarehouseAll: "全部仓库",
     regionLabels: { Americas: "Americas 美洲", EMEA: "EMEA 欧洲中东非洲", APAC: "APAC 亚太" },
     regionTotal: (n) => `共 ${n} 项`,
     riskCount: (n) => `${n} 项需要处理`,
@@ -307,7 +311,7 @@ const I18N = {
     navVertical: "Inventory Detail · Vertical", navHorizontal: "SKU Pivot · Wide", navMeeting: "Weekly Review",
     navSectionMeta: "Reference", navFootnotes: "Field Logic", exportBtn: "Export Excel",
     meetingRegionTitle: "Alert Ratio by Region", meetingRiskTitle: "This Week's Priority List",
-    regionFilterAll: "All Regions",
+    regionFilterAll: "All Regions", meetingWarehouseAll: "All Warehouses",
     regionLabels: { Americas: "Americas", EMEA: "EMEA", APAC: "APAC" },
     regionTotal: (n) => `${n} total`,
     riskCount: (n) => `${n} item(s)`,
@@ -760,8 +764,26 @@ function renderFootnotes(){
 }
 
 // ---------------- 周会汇报 / Weekly Review tab ----------------
+// Distinct warehouses derived from REGION_MAP, keyed by region: { Americas: ['USKY3(...)', ...], ... }
+const REGION_WAREHOUSES = (()=>{
+  const map = {};
+  Object.keys(REGION_MAP).forEach(k=>{
+    const wh = k.split('|')[1];
+    const region = REGION_MAP[k];
+    if (!map[region]) map[region] = new Set();
+    map[region].add(wh);
+  });
+  const out = {};
+  Object.keys(map).forEach(region=>{ out[region] = Array.from(map[region]).sort(); });
+  return out;
+})();
+
 function selectedMeetingRegion(){
   const sel = document.getElementById('meetingRegion');
+  return sel ? sel.value : '';
+}
+function selectedMeetingWarehouse(){
+  const sel = document.getElementById('meetingWarehouse');
   return sel ? sel.value : '';
 }
 function populateMeetingRegionSelect(){
@@ -775,17 +797,35 @@ function populateMeetingRegionSelect(){
   });
   sel.value = REGION_ORDER.includes(cur) ? cur : '';
 }
+function populateMeetingWarehouseSelect(){
+  const t = I18N[LANG];
+  const sel = document.getElementById('meetingWarehouse');
+  const cur = sel.value;
+  const region = selectedMeetingRegion();
+  const regions = region ? [region] : REGION_ORDER;
+  const whs = [];
+  regions.forEach(r => (REGION_WAREHOUSES[r] || []).forEach(w => { if (!whs.includes(w)) whs.push(w); }));
+  whs.sort();
+  sel.innerHTML = '';
+  const o0 = document.createElement('option'); o0.value = ''; o0.textContent = t.meetingWarehouseAll; sel.appendChild(o0);
+  whs.forEach(wh=>{
+    const o = document.createElement('option'); o.value = wh; o.textContent = wh; sel.appendChild(o);
+  });
+  sel.value = whs.includes(cur) ? cur : '';
+}
 
 function renderRegionBars(){
   const t = I18N[LANG];
   const el = document.getElementById('regionBars');
   const selected = selectedMeetingRegion();
+  const selectedWh = selectedMeetingWarehouse();
   const regions = selected ? [selected] : REGION_ORDER;
   const html = [];
   regions.forEach(region=>{
     let alert = 0, normal = 0, na = 0;
     DATA.vrows.forEach(r=>{
       if (regionOf(r[0], r[1]) !== region) return;
+      if (selectedWh && r[1] !== selectedWh) return;
       const code = alertCode(r[18]);
       if (code === 'ALERT') alert++;
       else if (code === 'Normal') normal++;
@@ -819,11 +859,12 @@ function renderRiskLists(){
   const t = I18N[LANG];
   const el = document.getElementById('riskLists');
   const selected = selectedMeetingRegion();
+  const selectedWh = selectedMeetingWarehouse();
   const regions = selected ? [selected] : REGION_ORDER;
   const html = [];
   const renderedTableIds = [];
   regions.forEach(region=>{
-    const rows = DATA.vrows.filter(r => regionOf(r[0], r[1]) === region && alertCode(r[18]) === 'ALERT');
+    const rows = DATA.vrows.filter(r => regionOf(r[0], r[1]) === region && (!selectedWh || r[1] === selectedWh) && alertCode(r[18]) === 'ALERT');
     rows.sort((a, b) => a[15] - b[15]);
     html.push(`<div class="risk-region"><div class="risk-region-title">${esc(t.regionLabels[region])} · ${esc(t.riskCount(rows.length))}</div>`);
     if (!rows.length){
@@ -858,12 +899,18 @@ function renderRiskLists(){
 
 function renderMeeting(){
   populateMeetingRegionSelect();
+  populateMeetingWarehouseSelect();
   renderRegionBars();
   renderRiskLists();
 }
 
 function initMeetingControls(){
   document.getElementById('meetingRegion').addEventListener('change', ()=>{
+    populateMeetingWarehouseSelect();
+    renderRegionBars();
+    renderRiskLists();
+  });
+  document.getElementById('meetingWarehouse').addEventListener('change', ()=>{
     renderRegionBars();
     renderRiskLists();
   });
