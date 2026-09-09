@@ -95,6 +95,31 @@
          padding:7px 12px; border-radius:8px; font-size:12.5px; outline:none; }
   .panel-toolbar input[type=text] { width: 260px; }
   .panel-toolbar input:focus, .panel-toolbar select:focus { border-color: var(--blue); }
+
+  /* ---- multi-select checkbox dropdown (used for Warehouse filters) ---- */
+  .ms-select { position: relative; display: inline-block; }
+  .ms-select-btn { background:#fff; border:1px solid var(--border); color: var(--text);
+              padding:7px 28px 7px 12px; border-radius:8px; font-size:12.5px; outline:none;
+              cursor:pointer; min-width:150px; max-width:220px; text-align:left; position:relative;
+              overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ms-select-btn::after { content:'▾'; position:absolute; right:10px; top:50%; transform:translateY(-50%);
+              font-size:9px; color: var(--muted); }
+  .ms-select-btn:hover { border-color: var(--blue); }
+  .ms-select.open .ms-select-btn { border-color: var(--blue); }
+  .ms-select-panel { display:none; position:absolute; top:calc(100% + 4px); left:0; z-index:50;
+              background:#fff; border:1px solid var(--border); border-radius:8px;
+              box-shadow:0 8px 24px rgba(0,0,0,.14); min-width:220px; max-width:320px; padding:8px; }
+  .ms-select.open .ms-select-panel { display:block; }
+  .ms-select-actions { display:flex; gap:10px; padding-bottom:6px; margin-bottom:6px;
+              border-bottom:1px solid var(--border); }
+  .ms-all-btn, .ms-clear-btn { background:none; border:none; color: var(--blue); font-size:12px;
+              cursor:pointer; padding:2px 2px; }
+  .ms-all-btn:hover, .ms-clear-btn:hover { text-decoration: underline; }
+  .ms-select-options { max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:1px; }
+  .ms-opt { display:flex; align-items:center; gap:7px; font-size:12.5px; color: var(--text);
+              padding:5px 6px; border-radius:6px; cursor:pointer; white-space:nowrap; }
+  .ms-opt:hover { background: var(--grey-bg); }
+  .ms-opt input[type=checkbox] { margin:0; cursor:pointer; flex-shrink:0; }
   .count-label { color: var(--muted); font-size:12px; margin-left:auto; }
   .btn-export { display:flex; align-items:center; gap:6px; background: #fff; border:1px solid var(--border);
         color: var(--text); padding:7px 14px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; }
@@ -200,7 +225,7 @@
       <div class="panel-toolbar">
         <input type="text" id="vSearch" data-i18n-ph="vSearchPh" placeholder="搜索 System / Warehouse / SKU / 名称...">
         <select id="vSystem"></select>
-        <select id="vWarehouse"></select>
+        <div id="vWarehouse" class="ms-select"></div>
         <select id="vAlert"></select>
         <button class="btn-export" id="vExport">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
@@ -215,7 +240,7 @@
       <div class="panel-toolbar">
         <input type="text" id="hSearch" data-i18n-ph="hSearchPh" placeholder="搜索 易仓SKU / 名称...">
         <select id="hSystem"></select>
-        <select id="hWarehouse"></select>
+        <div id="hWarehouse" class="ms-select"></div>
         <button class="btn-export" id="hExport">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
           <span data-i18n="exportBtn">导出 Excel</span>
@@ -285,6 +310,7 @@ const I18N = {
     hSearchPh: "搜索 易仓SKU / 名称...",
     vSystemAll: "全部 System", vWarehouseAll: "全部 Warehouse", vAlertAll: "全部 Stock Alert",
     hSystemAll: "全部 System", hWarehouseAll: "全部 Warehouse",
+    msSelectAll: "全选", msClear: "清空", msSelectedCount: (n) => `已选 ${n} 个仓库`,
     vAlertOpts: [["ALERT","🔴 ALERT"],["Normal","🟢 Normal"],["N/A","– N/A"]],
     vCount: (n,t)=>`显示 ${n} / ${t} 行`, hCount: (n,t)=>`显示 ${n} / ${t} 个易仓SKU`,
     vHeaders: ['System','Warehouse','仓库大类','易仓SKU','SKU名称','Serial','商品状态','分仓占比','销售预测(4周)','月度日均','周度日均','近7天日均','可用库存','在途库存','预计到货','可支撑天数','含在途天数','最低库存水位','库存警告'],
@@ -325,6 +351,7 @@ const I18N = {
     hSearchPh: "Search 易仓SKU / Name...",
     vSystemAll: "All Systems", vWarehouseAll: "All Warehouses", vAlertAll: "All Stock Alert",
     hSystemAll: "All Systems", hWarehouseAll: "All Warehouses",
+    msSelectAll: "Select All", msClear: "Clear", msSelectedCount: (n) => `${n} warehouses selected`,
     vAlertOpts: [["ALERT","🔴 ALERT"],["Normal","🟢 Normal"],["N/A","– N/A"]],
     vCount: (n,t)=>`Showing ${n} / ${t} rows`, hCount: (n,t)=>`Showing ${n} / ${t} SKUs`,
     vHeaders: ['System','Warehouse','Category','SKU','SKU Name','Serial','Status','Split %','Sales Forecast(4wk)','Monthly Avg/Day','Weekly Avg/Day','History Daily','SOH','ITI','ETA','Days of Cover','Days Cover+ITI','Min Stock','Stock Alert'],
@@ -363,6 +390,84 @@ function alertBadgeHtml(val){
 function esc(v){
   if (v === null || v === undefined) return '';
   return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(v){
+  return esc(v).replace(/"/g,'&quot;');
+}
+
+// ---------------- Generic multi-select checkbox dropdown (Warehouse filters) ----------------
+// Replaces a plain <select> with a button + checkbox panel so a filter can have either one or
+// several values checked at once (per Mili's request); other single-value filters (System,
+// Stock Alert, Region) stay as native <select>, this is only used for Warehouse.
+const multiSelectState = {};  // id -> Set of currently-checked values
+function initMultiSelect(id){
+  const root = document.getElementById(id);
+  root.classList.add('ms-select');
+  root.innerHTML = `<button type="button" class="ms-select-btn"></button>
+    <div class="ms-select-panel">
+      <div class="ms-select-actions">
+        <button type="button" class="ms-all-btn" data-i18n="msSelectAll">全选</button>
+        <button type="button" class="ms-clear-btn" data-i18n="msClear">清空</button>
+      </div>
+      <div class="ms-select-options"></div>
+    </div>`;
+  multiSelectState[id] = new Set();
+  root.querySelector('.ms-select-btn').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const willOpen = !root.classList.contains('open');
+    document.querySelectorAll('.ms-select.open').forEach(el=>{ if (el !== root) el.classList.remove('open'); });
+    root.classList.toggle('open', willOpen);
+  });
+  root.querySelector('.ms-select-panel').addEventListener('click', (e)=>e.stopPropagation());
+  root.querySelector('.ms-all-btn').addEventListener('click', ()=>{
+    root.querySelectorAll('.ms-select-options input[type=checkbox]').forEach(cb=>{
+      cb.checked = true; multiSelectState[id].add(cb.value);
+    });
+    updateMultiSelectLabel(id);
+    root.dispatchEvent(new Event('ms-change'));
+  });
+  root.querySelector('.ms-clear-btn').addEventListener('click', ()=>{
+    root.querySelectorAll('.ms-select-options input[type=checkbox]').forEach(cb=>{ cb.checked = false; });
+    multiSelectState[id].clear();
+    updateMultiSelectLabel(id);
+    root.dispatchEvent(new Event('ms-change'));
+  });
+}
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.ms-select.open').forEach(el=>el.classList.remove('open'));
+});
+function populateMultiSelectOptions(id, options, allLabelKey){
+  const root = document.getElementById(id);
+  root.dataset.allLabelKey = allLabelKey;
+  const optWrap = root.querySelector('.ms-select-options');
+  const prev = multiSelectState[id] || new Set();
+  const validSet = new Set(options);
+  const keep = new Set([...prev].filter(v=>validSet.has(v)));
+  multiSelectState[id] = keep;
+  optWrap.innerHTML = options.map(o=>
+    `<label class="ms-opt"><input type="checkbox" value="${escAttr(o)}"${keep.has(o)?' checked':''}><span>${esc(o)}</span></label>`
+  ).join('');
+  optWrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      if (cb.checked) multiSelectState[id].add(cb.value); else multiSelectState[id].delete(cb.value);
+      updateMultiSelectLabel(id);
+      root.dispatchEvent(new Event('ms-change'));
+    });
+  });
+  updateMultiSelectLabel(id);
+}
+function updateMultiSelectLabel(id){
+  const root = document.getElementById(id);
+  const btn = root.querySelector('.ms-select-btn');
+  const sel = multiSelectState[id] || new Set();
+  const t = I18N[LANG];
+  const allLabelKey = root.dataset.allLabelKey;
+  if (!sel.size) btn.textContent = t[allLabelKey];
+  else if (sel.size === 1) btn.textContent = [...sel][0];
+  else btn.textContent = t.msSelectedCount(sel.size);
+}
+function getMultiSelectValues(id){
+  return multiSelectState[id] ? [...multiSelectState[id]] : [];
 }
 function debounce(fn, ms){
   let timer = null;
@@ -458,7 +563,7 @@ let vFiltered = DATA.vrows;
 function applyVerticalFilters(){
   const q = document.getElementById('vSearch').value.trim().toLowerCase();
   const sys = document.getElementById('vSystem').value;
-  const wh = document.getElementById('vWarehouse').value;
+  const whSet = new Set(getMultiSelectValues('vWarehouse'));
   const alert = document.getElementById('vAlert').value;
   let shown = 0;
   vFiltered = [];
@@ -466,7 +571,7 @@ function applyVerticalFilters(){
     const meta = vRowMeta[idx];
     let ok = true;
     if (sys && meta.sys !== sys) ok = false;
-    if (ok && wh && meta.wh !== wh) ok = false;
+    if (ok && whSet.size && !whSet.has(meta.wh)) ok = false;
     if (ok && alert && meta.alertCode !== alert) ok = false;
     if (ok && q && meta.hay.indexOf(q) < 0) ok = false;
     tr.style.display = ok ? '' : 'none';
@@ -486,14 +591,9 @@ function populateVerticalSelects(){
   systems.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sysSel.appendChild(o); });
   sysSel.value = systems.includes(curSys) ? curSys : '';
 
-  const whSel = document.getElementById('vWarehouse');
-  const curWh = whSel.value;
-  whSel.innerHTML = '';
-  const ow0 = document.createElement('option'); ow0.value=''; ow0.textContent = t.vWarehouseAll; whSel.appendChild(ow0);
   const selSys = sysSel.value;
   const warehouses = [...new Set(DATA.vrows.filter(r=>!selSys || r[0]===selSys).map(r=>r[1]))];
-  warehouses.forEach(w=>{ const o=document.createElement('option'); o.value=w; o.textContent=w; whSel.appendChild(o); });
-  whSel.value = warehouses.includes(curWh) ? curWh : '';
+  populateMultiSelectOptions('vWarehouse', warehouses, 'vWarehouseAll');
 
   const alertSel = document.getElementById('vAlert');
   const curAlert = alertSel.value;
@@ -504,9 +604,10 @@ function populateVerticalSelects(){
 }
 
 function initVerticalControls(){
+  initMultiSelect('vWarehouse');
   document.getElementById('vSearch').addEventListener('input', debounce(applyVerticalFilters, 200));
   document.getElementById('vSystem').addEventListener('change', ()=>{ populateVerticalSelects(); applyVerticalFilters(); });
-  document.getElementById('vWarehouse').addEventListener('change', applyVerticalFilters);
+  document.getElementById('vWarehouse').addEventListener('ms-change', applyVerticalFilters);
   document.getElementById('vAlert').addEventListener('change', applyVerticalFilters);
 }
 
@@ -514,12 +615,12 @@ function initVerticalControls(){
 // based on the System / Warehouse filters
 function getVisibleWhIndices(){
   const sys = document.getElementById('hSystem').value;
-  const wh = document.getElementById('hWarehouse').value;
+  const whSet = new Set(getMultiSelectValues('hWarehouse'));
   const idx = [];
   DATA.wh_meta.forEach((m,i)=>{
     const [p,w] = m;
     if (sys && p !== sys) return;
-    if (wh && w !== wh) return;
+    if (whSet.size && !whSet.has(w)) return;
     idx.push(i);
   });
   return idx;
@@ -636,9 +737,7 @@ function applyHorizontalFilter(){
 function populateHorizontalSelects(){
   const t = I18N[LANG];
   const sysSel = document.getElementById('hSystem');
-  const whSel = document.getElementById('hWarehouse');
   const curSys = sysSel.value;
-  const curWh = whSel.value;
 
   sysSel.innerHTML = '';
   const o0 = document.createElement('option'); o0.value=''; o0.textContent = t.hSystemAll; sysSel.appendChild(o0);
@@ -646,18 +745,16 @@ function populateHorizontalSelects(){
   systems.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sysSel.appendChild(o); });
   sysSel.value = systems.includes(curSys) ? curSys : '';
 
-  whSel.innerHTML = '';
-  const ow0 = document.createElement('option'); ow0.value=''; ow0.textContent = t.hWarehouseAll; whSel.appendChild(ow0);
   const selSys = sysSel.value;
   const warehouses = [...new Set(DATA.wh_meta.filter(m=>!selSys || m[0]===selSys).map(m=>m[1]))];
-  warehouses.forEach(w=>{ const o=document.createElement('option'); o.value=w; o.textContent=w; whSel.appendChild(o); });
-  whSel.value = warehouses.includes(curWh) ? curWh : '';
+  populateMultiSelectOptions('hWarehouse', warehouses, 'hWarehouseAll');
 }
 
 function initHorizontalControls(){
+  initMultiSelect('hWarehouse');
   document.getElementById('hSearch').addEventListener('input', debounce(applyHorizontalFilter, 200));
   document.getElementById('hSystem').addEventListener('change', ()=>{ populateHorizontalSelects(); applyHorizontalFilter(); });
-  document.getElementById('hWarehouse').addEventListener('change', applyHorizontalFilter);
+  document.getElementById('hWarehouse').addEventListener('ms-change', applyHorizontalFilter);
 }
 
 // ---------------- ITI shipment-detail modal ----------------
