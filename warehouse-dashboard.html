@@ -1010,9 +1010,12 @@ function exportVertical(){
 function buildWideSheet(colIdx){
   const t = I18N[LANG];
   const nM = t.hMetricLabels.length;
-  const band = ['', '', '', ''];
+  // the ID headers go on the FIRST row: these 4 columns are merged across all three header
+  // rows, and Excel renders a merged range using its top-left cell -- putting the labels on
+  // the last row made A1:D3 come out blank.
+  const band = [...t.hIdHeaders];
   const row1 = ['', '', '', ''];
-  const row2 = [...t.hIdHeaders];
+  const row2 = ['', '', '', ''];
   colIdx.forEach(gi=>{
     const [region, sub] = HG.wh_region[gi];
     band.push(region === sub ? region : `${region} · ${sub}`);
@@ -1072,8 +1075,7 @@ function buildWideSheet(colIdx){
     }
   }
   ws['!merges'] = merges;
-  ws['!cols'] = row2.map((_,i)=>({wch: i<4 ? 22 : 13}));
-  ws['!freeze'] = {xSplit: 4, ySplit: 3};
+  ws['!cols'] = band.map((_,i)=>({wch: i<4 ? 22 : 13}));
   return ws;
 }
 
