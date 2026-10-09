@@ -52,11 +52,12 @@
   }
   table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
   thead th {
-    position: sticky; top: 0; background: var(--header-grad); color: #f4f0e4; text-align: center;
+    position: sticky; top: 0; background: #eef2f7; color: var(--accent); text-align: center;
     padding: 10px 8px; cursor: pointer; user-select: none; z-index: 2; white-space: normal; line-height: 1.3;
+    word-break: keep-all;   /* 中文表头不在词中间断开（可用库存 不会变成 可用库/存） */
     font-weight: 600; letter-spacing: 0.5px; border-bottom: 2px solid var(--accent-2);
   }
-  thead th:hover { background: linear-gradient(135deg, #163654 0%, #24507d 55%, #17436b 100%); }
+  thead th:hover { background: #e2e8f1; }
   thead th .arrow { font-size: 10px; margin-left: 4px; color: var(--accent-2); }
   tbody td { padding: 8px 8px; border-bottom: 1px solid var(--border); text-align: center; }
   /* every column fits the page width: long text cells wrap instead of pushing columns off-screen */
@@ -164,7 +165,7 @@
   <div class="stat red clickable" id="statRed"><div class="v" id="statRedV">0</div><div class="l" id="statRedL"></div></div>
   <div class="stat amber clickable" id="statAmber"><div class="v" id="statAmberV">0</div><div class="l" id="statAmberL"></div></div>
   <div class="stat"><div class="v" id="statAllV">0</div><div class="l" id="statAllL"></div></div>
-  <div class="stat"><div class="t" id="statTime">2026-10-09 12:51</div><div class="l" id="statTimeL"></div></div>
+  <div class="stat"><div class="t" id="statTime">2026-10-09 12:59</div><div class="l" id="statTimeL"></div></div>
 </div>
 
 <div class="table-wrap">
