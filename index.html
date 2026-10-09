@@ -46,6 +46,15 @@
   .toolbar input:focus, .toolbar select:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(184,144,46,0.15); }
   .toolbar input[type="text"] { flex: 1; min-width: 220px; }
   .result-count { font-size: 12px; color: var(--text-muted); margin-left: auto; font-weight: 500; }
+  .wrap-toggle {
+    font-size: 12px; padding: 7px 14px; border: 1px solid var(--border); border-radius: 24px;
+    background: #fafbfd; color: var(--text); cursor: pointer; white-space: nowrap;
+  }
+  .wrap-toggle.on { border-color: #56759a; color: #56759a; font-weight: 600; }
+  /* 不换行模式：每格一行，表格变宽时横向滚动 */
+  body.nowrap table thead th, body.nowrap tbody td, body.nowrap tbody td.wrap, body.nowrap tbody td.platform {
+    white-space: nowrap; max-width: none; word-break: normal;
+  }
   .table-wrap {
     background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px;
     overflow: auto; max-height: 74vh; box-shadow: 0 10px 34px rgba(15,41,66,0.09);
@@ -113,6 +122,7 @@
     .toolbar select { flex: 1 1 45%; min-width: 0; }
     .toolbar input[type="text"] { flex: 1 1 100%; min-width: 0; }
     .result-count { margin-left: 0; }
+    .wrap-toggle { display: none; }
     .stat { flex: 1 1 40%; padding: 10px 12px; }
     .stat .v { font-size: 20px; }
     .table-wrap { display: none; }
@@ -158,6 +168,7 @@
   <select id="filterCountry"><option value="" id="optAllCountry">全部国家</option></select>
   <select id="filterSkuAttr"><option value="" id="optAllSkuAttr">全部SKU属性</option></select>
   <input type="text" id="searchBox" placeholder="搜索 易仓SKU / SKU映射 / SKU属性 / 国家 / 渠道 ...">
+  <button type="button" class="wrap-toggle" id="wrapToggle"></button>
   <span class="result-count" id="resultCount"></span>
 </div>
 
@@ -165,7 +176,7 @@
   <div class="stat red clickable" id="statRed"><div class="v" id="statRedV">0</div><div class="l" id="statRedL"></div></div>
   <div class="stat amber clickable" id="statAmber"><div class="v" id="statAmberV">0</div><div class="l" id="statAmberL"></div></div>
   <div class="stat"><div class="v" id="statAllV">0</div><div class="l" id="statAllL"></div></div>
-  <div class="stat"><div class="t" id="statTime">2026-10-09 14:03</div><div class="l" id="statTimeL"></div></div>
+  <div class="stat"><div class="t" id="statTime">2026-10-09 14:06</div><div class="l" id="statTimeL"></div></div>
 </div>
 
 <div class="table-wrap">
@@ -211,7 +222,9 @@ let lang = 'en';
 try { const saved = localStorage.getItem('sku-alert-lang'); if (saved === 'zh' || saved === 'en') lang = saved; } catch (e) {}
 const THRESHOLD = 5;
 const WATCH_DAYS = 15;
-let riskFilter = '';   // '', 'red' or 'amber' -- set by clicking a summary card
+let riskFilter = '';
+let wrapText = true;   // 自动换行（一屏放下）；关掉 = 每格一行、可横向滚动。这台设备会记住选择
+try { if (localStorage.getItem('sku-alert-wrap') === 'off') wrapText = false; } catch (e) {}   // '', 'red' or 'amber' -- set by clicking a summary card
 const HEADERS_EN = ["Platform", "Country", "ECCang SKU", "ECCang SKU Name", "SKU Mapping", "SKU Attribute", "Available Qty", "In-Transit Qty", "30-Day Avg Daily Sales", "Days of Cover", "Days of Cover (incl. Transit)"];
 const PLATFORM_EN = {"谷仓GoodCang": "GoodCang", "嘀嗒NodeWMS": "NodeWMS", "万邑通Winit": "Winit", "保宏OMS": "Baohong OMS", "京东": "JD Logistics"};
 const COUNTRY_EN = {"美国": "USA", "加拿大": "Canada", "澳大利亚": "Australia", "欧洲": "Europe", "英国": "UK", "日本": "Japan", "SEA": "SEA", "新加坡": "Singapore"};
@@ -233,6 +246,7 @@ const I18N = {
     drilldownHint: '点击查看头程订单明细',
     statRed: `可支撑天数 < ${THRESHOLD} 天（点击筛选）`, statAmber: `${THRESHOLD}～${WATCH_DAYS} 天（点击筛选）`,
     statAll: '当前显示的 渠道+国家+SKU 组合', statTime: '数据更新时间',
+    wrapOn: '自动换行：开', wrapOff: '自动换行：关',
     cardAvail: '可用', cardTransit: '在途', cardSales: '日均销量', cardDays: '可支撑', cardDaysT: '含在途', daysUnit: '天',
   },
   en: {
@@ -244,6 +258,7 @@ const I18N = {
     drilldownHint: 'Click to view inbound shipment details',
     statRed: `Days of Cover < ${THRESHOLD} (click to filter)`, statAmber: `${THRESHOLD}-${WATCH_DAYS} days (click to filter)`,
     statAll: 'Channel + country + SKU rows shown', statTime: 'Data updated',
+    wrapOn: 'Wrap text: On', wrapOff: 'Wrap text: Off',
     cardAvail: 'Avail.', cardTransit: 'Transit', cardSales: 'Daily sales', cardDays: 'Cover', cardDaysT: 'incl. transit', daysUnit: 'd',
   }
 };
@@ -539,6 +554,17 @@ function passesNonRisk(r) {
   }
   return true;
 }
+function applyWrap() {
+  document.body.classList.toggle('nowrap', !wrapText);
+  const b = document.getElementById('wrapToggle');
+  b.textContent = wrapText ? I18N[lang].wrapOn : I18N[lang].wrapOff;
+  b.classList.toggle('on', wrapText);
+}
+document.getElementById('wrapToggle').addEventListener('click', () => {
+  wrapText = !wrapText;
+  try { localStorage.setItem('sku-alert-wrap', wrapText ? 'on' : 'off'); } catch (e) {}
+  applyWrap();
+});
 document.getElementById('statRed').addEventListener('click', () => { riskFilter = riskFilter === 'red' ? '' : 'red'; applyFilters(); });
 document.getElementById('statAmber').addEventListener('click', () => { riskFilter = riskFilter === 'amber' ? '' : 'amber'; applyFilters(); });
 document.getElementById('filterPlatform').addEventListener('change', applyFilters);
@@ -562,6 +588,7 @@ function updateLanguage() {
   document.getElementById('optAllCountry').textContent = t.allCountry;
   document.getElementById('optAllSkuAttr').textContent = t.allSkuAttr;
   document.getElementById('langToggle').textContent = t.toggleLabel;
+  applyWrap();
   document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
   document.getElementById('pageTag').style.display = lang === 'en' ? 'none' : '';
   refreshOptionLabels();
