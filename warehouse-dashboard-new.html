@@ -232,7 +232,7 @@
 </style>
 <style id="wideColStyle"></style>
 <style id="logistics-theme">
-/* Mili 2026-11-24: logistics oatmeal preview; enabled only for trial. */
+/* Mili 2026-11-24: approved logistics oatmeal theme. */
 :root {
   --sidebar-w:220px; --bg:#f6f1e8; --card:#fffdfa; --panel-2:#faf6ef;
   --text:#302c27; --muted:#766b5d; --muted-light:#9a8c7b;
@@ -280,8 +280,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible { 
 .kpi-card .label { font-size:12px; text-transform:none; letter-spacing:0; font-weight:500; }
 .kpi-card .value { margin-top:11px; font-size:33px; font-weight:650; line-height:1.1; letter-spacing:-.025em; }
 .kpi-card.total .value { color:var(--text); }
-.panel-card { margin:20px 0; background:var(--card); border-color:var(--border); border-radius:11px; }
-.panel-toolbar { background:var(--panel-2); padding:15px 17px; gap:10px; }
+.panel-card { margin:20px 0; background:var(--card); border-color:var(--border); border-radius:11px; overflow:visible; }
+/* Keep filters above sticky table headers. A short SKU result must not clip the menu. */
+.panel-toolbar { position:relative; z-index:6; background:var(--panel-2); padding:15px 17px; gap:10px; border-radius:11px 11px 0 0; }
+.table-wrap { isolation:isolate; border-radius:0 0 11px 11px; }
 .panel-toolbar input,.panel-toolbar select,.ms-select-btn,.btn-export,.meeting-section-head select {
   background:var(--card); color:var(--text); border-color:var(--line-strong); border-radius:7px;
   padding:8px 11px; font-size:12px; box-shadow:0 1px 2px #4d382208; min-height:36px; }
