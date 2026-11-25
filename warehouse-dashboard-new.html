@@ -464,10 +464,11 @@ html[lang="en"]{--sidebar-w:214px}
 .wd-info-popover{position:absolute;right:0;top:27px;width:min(360px,calc(100vw / var(--pz) - 36px));padding:12px 14px;border:1px solid var(--line-strong);border-radius:8px;background:var(--card);box-shadow:0 9px 24px #0002;line-height:1.6;color:var(--text);z-index:15}
 .wd-info-popover p{margin:5px 0;white-space:pre-line}
 .wd-info-popover #wd-period{padding:0;font-size:11px}
-.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding-top:7px;overflow-x:auto}
-.kpi-card{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:58px;padding:12px 14px;border-radius:8px;box-shadow:none}
+.kpis{display:grid;grid-template-columns:repeat(8,minmax(118px,1fr));gap:7px;padding-top:7px;overflow-x:auto;scrollbar-width:thin}
+.kpis::-webkit-scrollbar{height:4px}
+.kpi-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:64px;padding:9px 12px;border-radius:8px;box-shadow:none}
 .kpi-card .label{font-size:12px;font-weight:500;line-height:1.35}
-.kpi-card .value{font-size:26px;margin:0;line-height:1;font-weight:650}
+.kpi-card .value{font-size:25px;margin:0;line-height:1;font-weight:650;white-space:nowrap}
 .panel-card{margin:11px 0;border-radius:9px;overflow:visible}
 .panel-toolbar{padding:9px 11px;gap:7px;border-radius:9px 9px 0 0}
 .panel-toolbar input,.panel-toolbar select,.panel-toolbar .ms-select-btn,.panel-toolbar .btn-export,.wd-more>summary{min-height:32px;font-size:12px;line-height:16px;padding:6px 9px}
@@ -496,13 +497,13 @@ td.name-cell{min-width:180px;max-width:260px;overflow:hidden;text-overflow:ellip
 .footnotes summary{font-size:11.5px}
 .wd-sidebar-collapsed #sidebar{padding-inline:9px}
 @media(max-width:1000px){
-  .kpi-card{padding:11px 12px;gap:7px}
+  .kpi-card{padding:9px 10px;gap:4px}
   .kpi-card .label{font-size:11px}
-  .kpi-card .value{font-size:24px}
+  .kpi-card .value{font-size:23px}
 }
 @media(max-width:720px){
-  .kpis{grid-template-columns:repeat(5,minmax(124px,1fr));gap:6px;padding-bottom:3px}
-  .kpi-card{min-height:52px;padding:11px;gap:8px}
+  .kpis{grid-template-columns:repeat(8,minmax(118px,1fr));gap:6px;padding-bottom:3px}
+  .kpi-card{min-height:60px;padding:9px 10px;gap:4px}
   .kpi-card .label{font-size:11px}
   .kpi-card .value{font-size:23px}
   .panel-toolbar input[type=text]{flex:1 1 180px;max-width:none}
@@ -540,6 +541,23 @@ td.name-cell{min-width:180px;max-width:260px;overflow:hidden;text-overflow:ellip
   #vertTable thead th.sticky,#wideTable thead th.sticky{left:auto!important}
   .footnotes{padding:10px 12px}
 }
+/* Soft risk signals: avoid painting an entire cell, retain the original bands. */
+:root{--wd-risk-red:color-mix(in srgb,var(--red) 72%,var(--muted));--wd-risk-amber:color-mix(in srgb,var(--amber) 80%,var(--text));--wd-risk-green:color-mix(in srgb,var(--green) 75%,var(--muted))}
+.kpi-card.alert .value{color:var(--wd-risk-red)}.kpi-card.normal .value{color:var(--wd-risk-green)}.kpi-card.na .value,.kpi-card.norestock .value{color:var(--muted)}
+#wideTable td.d-red,#wideTable td.d-amber{background:transparent!important;color:var(--text)!important}
+.wd-cover-pill{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:42px;border-radius:5px;padding:2px 5px;font-weight:550;font-size:inherit;line-height:1.2}
+.wd-cover-pill::before,#wd-risk-legend .wd-legend-red::before,#wd-risk-legend .wd-legend-amber::before{content:'';display:inline-block;flex:none;width:4px;height:4px;border-radius:50%;background:currentColor}
+.wd-cover-red{color:var(--wd-risk-red);background:color-mix(in srgb,var(--wd-risk-red) 5%,var(--card))}
+.wd-cover-amber{color:var(--wd-risk-amber);background:color-mix(in srgb,var(--wd-risk-amber) 5%,var(--card))}
+#wd-risk-legend{display:inline-flex;align-items:center;gap:9px;font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap}
+#wd-risk-legend+ .count-label{margin-left:4px}
+#wd-risk-legend .wd-legend-red,#wd-risk-legend .wd-legend-amber{display:inline-flex;align-items:center;gap:4px}
+#wd-risk-legend .wd-legend-red{color:var(--wd-risk-red)}#wd-risk-legend .wd-legend-amber{color:var(--wd-risk-amber)}
+@media(max-width:900px){#wd-risk-legend{margin-left:0}}
+
+.st-Active,.badge-normal{color:var(--wd-risk-green);background:color-mix(in srgb,var(--wd-risk-green) 6%,var(--card))}
+.st-EOL,.badge-alert{color:var(--wd-risk-red);background:color-mix(in srgb,var(--wd-risk-red) 6%,var(--card))}
+.st-Phase{color:var(--wd-risk-amber);background:color-mix(in srgb,var(--wd-risk-amber) 6%,var(--card))}
 
 </style>
 </head>
@@ -1330,6 +1348,16 @@ function dayClass(v, avg){
   return '';
 }
 
+// Keep the original day bands; limit color to a small marker around the value.
+function coverValueHtml(v, rate){
+  const label = esc(hFmt(v, true));
+  const band = dayClass(v, rate);
+  if (!band) return label;
+  const range = band === 'd-red' ? `< ${HG.thresholds.red}` : `${HG.thresholds.red}–${HG.thresholds.amber}`;
+  const hint = LANG === 'zh' ? `天数色阶 ${range} 天；库存告警仍按各平台安全水位判断` : `Cover band: ${range} days; stock alerts follow platform safety levels`;
+  return `<span class="wd-cover-pill ${band === 'd-red' ? 'wd-cover-red' : 'wd-cover-amber'}" title="${escAttr(hint)}">${label}</span>`;
+}
+
 // The wide table has THREE header rows (band / warehouse / metrics). With every <th> at top:0 they
 // piled on top of each other when the table scrolled vertically, so each row is pinned below the
 // rows above it (the 4 ID cells span all three rows and stay at top:0).
@@ -1580,6 +1608,7 @@ function hCells(cells, gi, sku, meta, fallback, extraCls){
     } else {
       inner = hFmt(v, isDay);
     }
+    if (isDay) inner = coverValueHtml(v, block[HG.idx.rate]);
     out.push(`<td class="${cls.join(' ')}">${inner}</td>`);
   });
   return out.join('');
@@ -1704,7 +1733,8 @@ function paintAggregateRow(tr, cells, fbFlags){
       if (!td) continue;
       const isDay = HG.days_metric_idx.includes(i);
       const v = block ? block[i] : null;
-      td.textContent = hFmt(v, isDay);
+      if (isDay) td.innerHTML = coverValueHtml(v, block ? block[HG.idx.rate] : null);
+      else td.textContent = hFmt(v, false);
       let cn = 'wg'+gi;
       if (block === null || block === undefined) cn += ' grey';
       if (isDay){ const dc = dayClass(v, block ? block[HG.idx.rate] : null); if (dc) cn += ' ' + dc; }
@@ -1724,7 +1754,8 @@ function paintSummaryCells(tr, blocks, fb, visibleIdx){
     if (!td) continue;
     const isDay = HG.days_metric_idx.includes(i);
     const v = s ? s[i] : null;
-    td.textContent = hFmt(v, isDay);
+    if (isDay) td.innerHTML = coverValueHtml(v, s ? s[HG.idx.rate] : null);
+    else td.textContent = hFmt(v, false);
     let cn = 'wgS wgS-sum';
     if (!s) cn += ' grey';
     if (isDay){ const dc = dayClass(v, s ? s[HG.idx.rate] : null); if (dc) cn += ' ' + dc; }
@@ -2363,11 +2394,14 @@ refreshStatusesFromRelay();
   }
   function kpis() {
     const rows = currentRows(), codes = rows.map(r=>alertCode(r[V['Stock Alert']]));
-    const values = [rows.length,...['ALERT','Normal','N/A','NoRestock'].map(c=>codes.filter(v=>v===c).length)];
-    const labels = [text('明细行数','Detail rows'),text('库存警告','Stock alert'),text('库存正常','Normal'),text('无销量参考','No sales rate'),text('不补货','No restock')];
-    const classes = ['total','alert','normal','na','norestock'];
+    const skus = new Set(rows.map(r=>r[V.SKU])).size;
+    const stock = column=>rows.reduce((sum,r)=>sum+(typeof r[column]==='number'?r[column]:0),0);
+    const values = [rows.length,skus,stock(V.SOH),stock(V.ITI),...['ALERT','Normal','N/A','NoRestock'].map(c=>codes.filter(v=>v===c).length)];
+    const labels = [text('明细行数','Detail rows'),text('涉及SKU数','Unique SKUs'),text('可用库存 · 件','Available · units'),text('在途库存 · 件','Inbound · units'),text('库存警告','Stock alert'),text('库存正常','Normal'),text('无销量参考','No sales rate'),text('不补货','No restock')];
+    const classes = ['total','skus','soh','inbound','alert','normal','na','norestock'];
     const scope=text('按当前视图筛选统计；行数单位为仓库 × SKU','Follows current view filters; one row = warehouse × SKU');
-    document.querySelector('.kpis').innerHTML = values.map((v,i)=>`<div class="kpi-card ${classes[i]}" title="${scope}"><div class="label">${labels[i]}</div><div class="value">${v.toLocaleString()}</div></div>`).join('');
+    const tips=[scope,text('当前筛选中的易仓SKU去重计数，同一SKU跨仓只计一次','Distinct SKU values in the current selection; counted once across warehouses'),text('当前筛选中平台可用库存求和，不含在途','Sum of available platform inventory in the current selection; excludes inbound'),text('当前筛选中平台在途库存求和；不重复加表单在途','Sum of platform inbound inventory; form inbound is not added again'),scope,scope,scope,scope];
+    document.querySelector('.kpis').innerHTML = values.map((v,i)=>`<div class="kpi-card ${classes[i]}" data-kpi="${classes[i]}" title="${tips[i]}"><div class="label">${labels[i]}</div><div class="value">${n(v)}</div></div>`).join('');
     updateMoreLabels();
   }
   function updateMoreLabels(){
@@ -2473,6 +2507,8 @@ refreshStatusesFromRelay();
     });applyColumns();
   };
   function labels() {
+    document.getElementById('wd-risk-legend').innerHTML=`<span>${text('天数提示','Cover bands')}</span><span class="wd-legend-red">&lt;${HG.thresholds.red}${text('天','d')}</span><span class="wd-legend-amber">${HG.thresholds.red}–${HG.thresholds.amber}${text('天','d')}</span>`;
+    document.getElementById('wd-risk-legend').title=text('颜色仅提示天数区间；库存警告仍按各平台原安全水位判断','Colors indicate cover-day bands; stock alerts follow the original platform safety levels');
     I18N.zh.pageTitle='库存看板';I18N.en.pageTitle='Inventory Dashboard';
     I18N.zh.vSystemAll='全部平台';I18N.en.vSystemAll='All systems';
     I18N.zh.vWarehouseAll='全部仓库';I18N.en.vWarehouseAll='All warehouses';
@@ -2537,6 +2573,7 @@ refreshStatusesFromRelay();
     });
     const empty=document.createElement('div');empty.id='wd-'+prefix+'-empty';empty.className='wd-empty';empty.hidden=true;toolbar.parentElement.appendChild(empty);
   });
+  const legend=document.createElement('span');legend.id='wd-risk-legend';document.getElementById('hCount').before(legend);
   document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{kpis();save();}));
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelectorAll('.ms-select.open').forEach(el=>el.classList.remove('open'));document.querySelectorAll('.wd-more[open],#wd-info[open],#wd-columns[open]').forEach(d=>d.open=false);closeItiModal();}});
   document.addEventListener('click',event=>{document.querySelectorAll('.wd-more[open],#wd-info[open]').forEach(d=>{if(!d.contains(event.target))d.open=false;});});
