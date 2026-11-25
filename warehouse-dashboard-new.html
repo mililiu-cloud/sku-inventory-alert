@@ -609,6 +609,14 @@ button.kpi-card .value{font-size:25px;font-weight:650}
   #wd-scope-note{flex-basis:100%;border:0;padding:0}
   .table-wrap{max-height:calc(100dvh / var(--pz) - 316px)}
 }
+/* A continuous header surface avoids a cut-out above warehouse metrics. */
+#wideTable thead th.wh-group-a,#wideTable thead th.wh-group-b,
+#wideTable thead th.wh-summary-wh,#wideTable thead th.wh-summary-m{background:var(--head)}
+#wideTable thead th.wd-warehouse-head{padding:4px 9px;border-left:1px solid var(--line-strong);border-bottom-color:color-mix(in srgb,var(--line-strong) 45%,var(--head))}
+.wd-warehouse-title{display:inline-block;padding:2px 8px;border:1px solid color-mix(in srgb,var(--text) 12%,var(--head));border-radius:4px;background:color-mix(in srgb,var(--text) 5%,var(--head));color:var(--text);font-weight:650;line-height:1.25;white-space:nowrap}
+.wh-summary-wh .wd-warehouse-title{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 30%,var(--head));background:color-mix(in srgb,var(--amber) 6%,var(--head))}
+#wideTable thead th.wd-wh-start{border-left:1px solid var(--line-strong)}
+#wideTable tbody td.wd-wh-start{border-left:1px solid color-mix(in srgb,var(--line-strong) 55%,transparent)}
 
 </style>
 </head>
@@ -1460,8 +1468,9 @@ function renderWideHead(visibleIdx, summaryOn){
     const th=document.createElement('th');th.textContent=h;th.rowSpan=2;th.className='sticky sk'+i;warehouses.appendChild(th);
   });
   const add=(label,cls,title)=>{
-    const th=document.createElement('th');th.textContent=label;th.colSpan=t.hMetricLabels.length;th.className=cls;th.title=title||label;warehouses.appendChild(th);
-    t.hMetricLabels.forEach(ml=>{const m=document.createElement('th');m.textContent=ml;m.className=cls.includes('summary')?'wh-summary-m':'';metrics.appendChild(m);});
+    const th=document.createElement('th');th.colSpan=t.hMetricLabels.length;th.className=cls+' wd-warehouse-head';th.title=title||label;
+    const name=document.createElement('span');name.className='wd-warehouse-title';name.textContent=label;th.appendChild(name);warehouses.appendChild(th);
+    t.hMetricLabels.forEach((ml,i)=>{const m=document.createElement('th');m.textContent=ml;m.className=(cls.includes('summary')?'wh-summary-m ':'')+(i===0?'wd-wh-start':'');metrics.appendChild(m);});
   };
   if(summaryOn) add(t.hSummary(document.getElementById('hSub').value),'wh-group-a wh-summary-wh');
   idx.forEach((gi,pos)=>add(HG.wh_headers[gi],pos%2?'wh-group-b':'wh-group-a',HG.wh_region[gi].join(' / ')+' · '+HG.wh_headers[gi]));
@@ -1595,7 +1604,7 @@ function onEditButton(){
 // filled in by paintSummaryCells on every filter change
 function hSummaryCells(){
   let out = '';
-  for (let i=0;i<HG.metrics_zh.length;i++) out += '<td class="wgS wgS-sum">-</td>';
+  for (let i=0;i<HG.metrics_zh.length;i++) out += `<td class="wgS wgS-sum${i===0?' wd-wh-start':''}">-</td>`;
   return out;
 }
 
@@ -1604,12 +1613,13 @@ function hCells(cells, gi, sku, meta, fallback, extraCls){
   const out = [];
   const block = cells[gi];
   if (block === null || block === undefined){
-    for (let i=0;i<HG.metrics_zh.length;i++) out.push(`<td class="wg${gi}${extraCls} grey">-</td>`);
+    for (let i=0;i<HG.metrics_zh.length;i++) out.push(`<td class="wg${gi}${extraCls} grey${i===0?' wd-wh-start':''}">-</td>`);
     return out.join('');
   }
   block.slice(0, HG.metrics_zh.length).forEach((v,i)=>{
     const isDay = HG.days_metric_idx.includes(i);
     const cls = ['wg'+gi];
+    if(i===0) cls.push('wd-wh-start');
     if (extraCls) cls.push(extraCls.trim());
     if (isDay){ const dc = dayClass(v, block[HG.idx.rate]); if (dc) cls.push(dc); }
     if (i===1 && fallback) cls.push('avg-fb');
