@@ -617,6 +617,15 @@ button.kpi-card .value{font-size:25px;font-weight:650}
 .wh-summary-wh .wd-warehouse-title{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 30%,var(--head));background:color-mix(in srgb,var(--amber) 6%,var(--head))}
 #wideTable thead th.wd-wh-start{border-left:1px solid var(--line-strong)}
 #wideTable tbody td.wd-wh-start{border-left:1px solid color-mix(in srgb,var(--line-strong) 55%,transparent)}
+/* Warehouse identity uses muted title colors; risk numbers retain their own palette. */
+.wd-wh-tone-0{--wd-wh-color:light-dark(#3d678d,#a0bdd7)}
+.wd-wh-tone-1{--wd-wh-color:light-dark(#765f8c,#c2aed8)}
+.wd-wh-tone-2{--wd-wh-color:light-dark(#32787b,#92c9c7)}
+.wd-wh-tone-3{--wd-wh-color:light-dark(#88617d,#d0adc6)}
+.wd-wh-tone-4{--wd-wh-color:light-dark(#626b96,#b0b8dd)}
+.wd-wh-tone-5{--wd-wh-color:light-dark(#677549,#bbc69b)}
+[class*="wd-wh-tone-"] .wd-warehouse-title{color:var(--wd-wh-color);border-color:color-mix(in srgb,var(--wd-wh-color) 25%,var(--head));background:color-mix(in srgb,var(--wd-wh-color) 6%,var(--head))}
+[class*="wd-wh-tone-"] .wd-warehouse-title::before{content:'';display:inline-block;width:3px;height:11px;margin-right:6px;vertical-align:-1px;border-radius:1px;background:currentColor}
 
 </style>
 </head>
@@ -1473,7 +1482,8 @@ function renderWideHead(visibleIdx, summaryOn){
     t.hMetricLabels.forEach((ml,i)=>{const m=document.createElement('th');m.textContent=ml;m.className=(cls.includes('summary')?'wh-summary-m ':'')+(i===0?'wd-wh-start':'');metrics.appendChild(m);});
   };
   if(summaryOn) add(t.hSummary(document.getElementById('hSub').value),'wh-group-a wh-summary-wh');
-  idx.forEach((gi,pos)=>add(HG.wh_headers[gi],pos%2?'wh-group-b':'wh-group-a',HG.wh_region[gi].join(' / ')+' · '+HG.wh_headers[gi]));
+  // Use the original warehouse index so filtering never changes its identifying color.
+  idx.forEach((gi,pos)=>add(HG.wh_headers[gi],(pos%2?'wh-group-b':'wh-group-a')+' wd-wh-tone-'+(gi%6),HG.wh_region[gi].join(' / ')+' · '+HG.wh_headers[gi]));
   thead.appendChild(warehouses);thead.appendChild(metrics);
 }
 
