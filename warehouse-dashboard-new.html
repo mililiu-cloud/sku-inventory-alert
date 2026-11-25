@@ -437,6 +437,110 @@ td.wgS-sum{background:var(--panel-2)}.d-red{background:var(--red-bg)!important;c
 html[lang="en"]{--sidebar-w:260px} @media(max-width:600px){html[lang="en"]{--sidebar-w:70px}}
 #wd-preview-label{display:inline-block;margin-top:9px;padding:3px 7px;border:1px solid var(--line-strong);border-radius:4px;font-size:10px;font-weight:500;letter-spacing:.02em;color:var(--blue);background:var(--blue-light)}
 
+/* Mili 2026-11-25: prioritize table space; keep normal text size and menu overflow. */
+:root{--sidebar-w:188px}
+html[lang="en"]{--sidebar-w:214px}
+#main{padding-inline:18px}
+#topbar{min-height:62px;margin-inline:-18px;padding:12px 19px;gap:8px;flex-wrap:nowrap}
+#topbar>div:first-child{display:flex;align-items:center;gap:9px;min-width:0;flex-wrap:wrap}
+#topbar h1{font-size:21px;line-height:1.25;letter-spacing:-.025em}
+#topbar .sub{display:none}
+#wd-preview-label{margin:0;padding:2px 6px;white-space:nowrap;font-size:10px}
+#langToggle{flex:none;padding:2px}
+#langToggle button{padding:4px 8px;font-size:11px}
+#wd-theme{min-height:30px;min-width:84px;max-width:110px;font-size:11px;padding:4px 8px;flex:none}
+#sidebar{padding:24px 13px 18px}
+#sidebar .brand{padding-inline:9px}
+.wordmark{font-size:27px}
+#sidebar .nav-section{margin:31px 0 12px;padding-inline:9px;font-size:11px}
+#sidebar nav{gap:5px}
+#sidebar .nav-item{padding:11px 10px;min-height:40px;font-size:12px;white-space:normal;line-height:1.35;gap:9px}
+#wd-sidebar-toggle{top:24px}
+#wd-freshness{padding-top:9px;gap:7px;font-size:11px;line-height:20px;flex-wrap:wrap;position:relative;z-index:8;min-height:29px}
+.wd-meta-count{color:var(--muted-light);margin-left:5px}
+#wd-info{position:relative;margin-left:auto}
+#wd-info summary{cursor:pointer;color:var(--muted);list-style:none;font-size:11px;white-space:nowrap}
+#wd-info summary::after{content:' ⌄'}
+.wd-info-popover{position:absolute;right:0;top:27px;width:min(360px,calc(100vw / var(--pz) - 36px));padding:12px 14px;border:1px solid var(--line-strong);border-radius:8px;background:var(--card);box-shadow:0 9px 24px #0002;line-height:1.6;color:var(--text);z-index:15}
+.wd-info-popover p{margin:5px 0;white-space:pre-line}
+.wd-info-popover #wd-period{padding:0;font-size:11px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding-top:7px;overflow-x:auto}
+.kpi-card{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:58px;padding:12px 14px;border-radius:8px;box-shadow:none}
+.kpi-card .label{font-size:12px;font-weight:500;line-height:1.35}
+.kpi-card .value{font-size:26px;margin:0;line-height:1;font-weight:650}
+.panel-card{margin:11px 0;border-radius:9px;overflow:visible}
+.panel-toolbar{padding:9px 11px;gap:7px;border-radius:9px 9px 0 0}
+.panel-toolbar input,.panel-toolbar select,.panel-toolbar .ms-select-btn,.panel-toolbar .btn-export,.wd-more>summary{min-height:32px;font-size:12px;line-height:16px;padding:6px 9px}
+.panel-toolbar input[type=text]{width:220px;min-width:140px;max-width:280px;flex:0 1 220px}
+.panel-toolbar .ms-select-btn{min-width:125px;max-width:190px;padding-right:26px}
+.panel-toolbar #hRegion{max-width:155px}
+.count-label{font-size:10.5px;white-space:nowrap}
+.wd-more{position:relative;flex:none}
+.wd-more>summary{display:block;cursor:pointer;white-space:nowrap;border:1px solid var(--line-strong);border-radius:7px;background:var(--card);color:var(--text);list-style:none;box-shadow:0 1px 2px #4d382208}
+.wd-more>summary::after{content:' ⌄'}
+.wd-more[open]>summary,.wd-more.wd-has-filter>summary{border-color:var(--accent);color:var(--blue)}
+.wd-more-body{position:absolute;right:0;top:38px;width:300px;max-width:calc(100vw / var(--pz) - 36px);display:grid;gap:9px;padding:12px;border:1px solid var(--line-strong);border-radius:9px;background:var(--card);box-shadow:0 9px 24px #0002;z-index:12}
+.wd-more-body>select,.wd-more-body #hSub{width:100%;max-width:none}
+.wd-more-body .wd-data-tools{padding:0;border:0;display:grid;grid-template-columns:1fr 1fr;gap:9px;background:none;z-index:auto}
+.wd-data-tools #wd-quality,.wd-data-tools #wd-actions{grid-column:1/-1;width:100%;min-width:0}
+.wd-data-tools select,.wd-data-tools button,.wd-data-tools summary{min-height:32px;font-size:12px;padding:6px 9px}
+#wd-columns-options{right:auto;left:0;top:37px;max-height:300px;min-width:245px}
+.wd-empty{padding:22px}
+table{font-size:12px}
+th,td{padding:7px 9px;line-height:1.3}
+#vertTable thead th,#wideTable thead th{padding:7px 9px;font-size:11.5px}
+td.name-cell{min-width:180px;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.wd-action{display:none}
+.table-wrap{max-height:calc(100dvh / var(--pz) - 236px);min-height:80px}
+.footnotes{padding:11px 14px;margin-bottom:16px;font-size:11px;border-radius:8px}
+.footnotes summary{font-size:11.5px}
+.wd-sidebar-collapsed #sidebar{padding-inline:9px}
+@media(max-width:1000px){
+  .kpi-card{padding:11px 12px;gap:7px}
+  .kpi-card .label{font-size:11px}
+  .kpi-card .value{font-size:24px}
+}
+@media(max-width:720px){
+  .kpis{grid-template-columns:repeat(5,minmax(124px,1fr));gap:6px;padding-bottom:3px}
+  .kpi-card{min-height:52px;padding:11px;gap:8px}
+  .kpi-card .label{font-size:11px}
+  .kpi-card .value{font-size:23px}
+  .panel-toolbar input[type=text]{flex:1 1 180px;max-width:none}
+  .count-label{width:auto;margin-left:auto}
+  .wd-more-body{right:0}
+}
+@media(max-width:600px){
+  :root,html[lang="en"]{--sidebar-w:54px}
+  #sidebar{padding:21px 6px 15px}
+  #sidebar .brand{padding:0;text-align:center}
+  .wordmark{font-size:0}
+  .wordmark>span{font-size:22px;margin:0}
+  #sidebar .nav-item{padding:11px 0;justify-content:center}
+  .wd-sidebar-collapsed #sidebar{padding-inline:6px}
+  #main{padding-inline:10px}
+  #topbar{margin-inline:-10px;min-height:54px;padding:9px 11px;gap:6px}
+  #topbar>div:first-child{gap:5px}
+  #topbar h1{font-size:18px}
+  #langToggle button{padding:4px 6px;font-size:11px}
+  #wd-theme{min-width:74px;max-width:90px}
+  #wd-freshness{font-size:10.5px;gap:5px;padding-top:7px;line-height:18px}
+  .wd-meta-count{display:none}
+  .kpis{padding-top:6px}
+  .panel-card{margin-top:8px}
+  .panel-toolbar{padding:8px;gap:6px}
+  .panel-toolbar input[type=text]{flex-basis:100%;width:100%;min-width:0}
+  .panel-toolbar .ms-select-btn{min-width:118px;max-width:155px}
+  .panel-toolbar .btn-export{padding-inline:7px}
+  .panel-toolbar .btn-export svg{width:12px;height:12px;margin-right:3px}
+  .panel-toolbar .btn-export span{font-size:11px}
+  .wd-more-body{right:auto;left:0;width:280px}
+  .count-label{font-size:10px}
+  .table-wrap{max-height:calc(100dvh / var(--pz) - 268px)}
+  #vertTable td.sticky,#wideTable td.sticky{position:static}
+  #vertTable thead th.sticky,#wideTable thead th.sticky{left:auto!important}
+  .footnotes{padding:10px 12px}
+}
+
 </style>
 </head>
 <body><!-- wd-login-gate -->
@@ -2260,9 +2364,19 @@ refreshStatusesFromRelay();
   function kpis() {
     const rows = currentRows(), codes = rows.map(r=>alertCode(r[V['Stock Alert']]));
     const values = [rows.length,...['ALERT','Normal','N/A','NoRestock'].map(c=>codes.filter(v=>v===c).length)];
-    const labels = [text('当前仓库 × SKU 行数','Selected warehouse × SKU rows'),text('库存警告','Stock alert'),text('库存正常','Normal'),text('无销量参考','No sales rate'),text('不补货','No restock')];
+    const labels = [text('明细行数','Detail rows'),text('库存警告','Stock alert'),text('库存正常','Normal'),text('无销量参考','No sales rate'),text('不补货','No restock')];
     const classes = ['total','alert','normal','na','norestock'];
-    document.querySelector('.kpis').innerHTML = values.map((v,i)=>`<div class="kpi-card ${classes[i]}"><div class="label">${labels[i]}</div><div class="value">${v.toLocaleString()}</div><small>${text('随当前视图筛选','Follows current view filters')}</small></div>`).join('');
+    const scope=text('按当前视图筛选统计；行数单位为仓库 × SKU','Follows current view filters; one row = warehouse × SKU');
+    document.querySelector('.kpis').innerHTML = values.map((v,i)=>`<div class="kpi-card ${classes[i]}" title="${scope}"><div class="label">${labels[i]}</div><div class="value">${v.toLocaleString()}</div></div>`).join('');
+    updateMoreLabels();
+  }
+  function updateMoreLabels(){
+    ['v','h'].forEach(p=>{
+      const el=document.getElementById('wd-'+p+'-more-label');if(!el)return;
+      const count=p==='v'?Number(!!quality)+Number(!!action)+Number(!!document.getElementById('vSystem').value)+Number(!!document.getElementById('vAlert').value):Number(!!document.getElementById('hSub').value);
+      el.textContent=text('更多筛选','More filters')+(count?` (${count})`:'');
+      el.parentElement.classList.toggle('wd-has-filter',!!count);
+    });
   }
   function save() {
     const state = {columns:[...hiddenCols],tab:document.querySelector('.nav-item.active')?.dataset.tab||'vertical'};
@@ -2286,6 +2400,8 @@ refreshStatusesFromRelay();
       const status=tr.children[V['Stock Alert']];
       status.querySelector('.wd-action')?.remove();
       const code=actionCode(r);
+      status.title=actionText(code);
+      tr.children[V['SKU Name']].title=r[V['SKU Name']]||'';
       if(code) { const note=document.createElement('small');note.className='wd-action';note.textContent=actionText(code);status.appendChild(note); }
     });
     document.querySelectorAll('#wideTable tbody tr').forEach(tr=>{
@@ -2309,10 +2425,10 @@ refreshStatusesFromRelay();
     const date=[expected.getFullYear(),String(expected.getMonth()+1).padStart(2,'0'),String(expected.getDate()).padStart(2,'0')].join('-');
     const stale = asOf < date;
     const box=document.getElementById('wd-freshness'); box.classList.toggle('stale',stale);
-    box.innerHTML=`<span class="wd-status-dot"></span><span>${stale?text('数据待刷新','Refresh overdue'):text('库存快照','Inventory snapshot')} <b>${esc(asOf)}</b> · ${text('生成于','Built')} ${esc(DATA.stats.built_at||'—')} (UTC+8)</span><span class="wd-freshness-schedule">${text('周一至六 08:53 自动刷新','Mon–Sat 08:53 automatic refresh')}</span>`;
-    box.title=(DATA.collection||[]).map(v=>`${v.platform}: ${v.collected_at} (UTC+8)`).join('\n')||text('未留存各平台独立采集时间；此处展示数据日期和页面生成时间。','Per-platform collection timestamps were not saved; snapshot and build time are shown.');
     const periods=DATA.forecast_periods||[];
-    document.getElementById('wd-period').textContent=periods.length?text(`目标预测周期：${periods[0][0]} — ${periods.at(-1)[1]} · 当周日均 ÷7，四周日均 ÷28`,`Target forecast window: ${periods[0][0]} — ${periods.at(-1)[1]} · weekly ÷7, four-week ÷28`):'';
+    const period=periods.length?text(`目标预测周期：${periods[0][0]} — ${periods.at(-1)[1]} · 当周日均 ÷7，四周日均 ÷28`,`Target forecast window: ${periods[0][0]} — ${periods.at(-1)[1]} · weekly ÷7, four-week ÷28`):'';
+    const source=(DATA.collection||[]).map(v=>`${v.platform}: ${v.collected_at} (UTC+8)`).join('\n')||text('未留存各平台独立采集时间。','Per-platform collection timestamps were not saved.');
+    box.innerHTML=`<span class="wd-status-dot"></span><span class="wd-snapshot-label">${stale?text('数据待刷新','Refresh overdue'):text('快照','Snapshot')} <b>${esc(asOf)}</b> · ${esc((DATA.stats.built_at||'').slice(11)||'—')}</span><span class="wd-meta-count">${DATA.stats.n_easku} SKU · ${DATA.stats.n_wh} ${text('仓库','warehouses')}</span><details id="wd-info"><summary>${text('数据口径','Data info')}</summary><div class="wd-info-popover"><p>${text('页面生成于','Page built')} ${esc(DATA.stats.built_at||'—')} (UTC+8)</p><p>${text('周一至六 08:53 自动刷新','Mon–Sat 08:53 automatic refresh')}</p><p id="wd-period">${esc(period)}</p><p>${esc(source)}</p></div></details>`;
   }
   function help() {
     const noRestock=DATA.vrows.filter(r=>alertCode(r[V['Stock Alert']])==='NoRestock').map(r=>`${r[V.System]} / ${whShort(r[V.Warehouse])} / ${r[V.SKU]}`);
@@ -2357,12 +2473,17 @@ refreshStatusesFromRelay();
     });applyColumns();
   };
   function labels() {
-    if(DATA.preview) document.getElementById('wd-preview-label').textContent=text('测试预览 · 未同步正式版','Preview · not live');
+    I18N.zh.pageTitle='库存看板';I18N.en.pageTitle='Inventory Dashboard';
+    I18N.zh.vSystemAll='全部平台';I18N.en.vSystemAll='All systems';
+    I18N.zh.vWarehouseAll='全部仓库';I18N.en.vWarehouseAll='All warehouses';
+    I18N.zh.vAlertAll='全部库存状态';I18N.en.vAlertAll='All stock states';
+    I18N.zh.vSearchPh='搜索 SKU / 名称 / 仓库';I18N.en.vSearchPh='Search SKU / name / warehouse';
+    if(DATA.preview){const badge=document.getElementById('wd-preview-label');badge.textContent=text('测试预览','Preview');badge.title=text('仅测试页，尚未同步正式版','Test page only; not yet applied to production');}
     I18N.zh.vHeaders[V['Monthly Avg/Day']]='四周预测日均';I18N.en.vHeaders[V['Monthly Avg/Day']]='4-week Forecast Daily';
     I18N.zh.vHeaders[V['Weekly Avg/Day']]='当周预测日均';I18N.en.vHeaders[V['Weekly Avg/Day']]='Current-week Forecast Daily';
     I18N.zh.vHeaders[V['Actual Shipped 4wk']]='折算出货量(按平台周期)';I18N.en.vHeaders[V['Actual Shipped 4wk']]='Estimated Volume (Platform Window)';
     ['v','h'].forEach(prefix=>{
-      document.getElementById('wd-'+prefix+'-reset').textContent=text('重置筛选','Reset filters');
+      document.getElementById('wd-'+prefix+'-reset').textContent=text('重置','Reset');
       document.getElementById('wd-'+prefix+'-empty').textContent=text('没有匹配记录，请调整或重置筛选。','No matching records. Adjust or reset filters.');
     });
     const counts={enum:0,forecast:0,zero:0};DATA.vrows.forEach(r=>{const f=qualityFlags(r);Object.keys(counts).forEach(k=>counts[k]+=+f[k]);});
@@ -2373,7 +2494,7 @@ refreshStatusesFromRelay();
     document.getElementById('wd-columns-options').innerHTML=I18N[LANG].vHeaders.map((label,i)=>i<5?'':`<label><input type="checkbox" data-column="${i}" ${hiddenCols.has(i)?'':'checked'}>${esc(label)}</label>`).join('');
     document.getElementById('wd-theme').setAttribute('aria-label',text('配色主题','Color theme'));
     document.getElementById('wd-theme').innerHTML=Object.entries(THEMES).map(([v,l])=>`<option value="${v}">${l[LANG==='zh'?0:1]}</option>`).join('');document.getElementById('wd-theme').value=document.documentElement.dataset.wdTheme||'warm';
-    rowHints();freshness();help();
+    rowHints();freshness();help();updateMoreLabels();
   }
   const oldLang=setLang;
   setLang=function(lang){document.documentElement.lang=lang==='en'?'en':'zh-CN';labels();oldLang(lang);labels();renderVerticalHead();applyColumns();kpis();try{localStorage.setItem('wd-language',lang);}catch(_){}};
@@ -2387,7 +2508,6 @@ refreshStatusesFromRelay();
   if(DATA.preview){const badge=document.createElement('span');badge.id='wd-preview-label';document.querySelector('#topbar>div:first-child').appendChild(badge);}
   themeSelect.addEventListener('change',()=>{document.documentElement.dataset.wdTheme=themeSelect.value;try{localStorage.setItem('wd-inventory-theme',themeSelect.value);}catch(_){}});
   const fresh=document.createElement('div');fresh.id='wd-freshness';document.querySelector('.kpis').before(fresh);
-  const period=document.createElement('div');period.id='wd-period';fresh.after(period);
   const tools=document.createElement('div');tools.className='wd-data-tools';tools.innerHTML='<select id="wd-quality" aria-label="数据维护 / Data quality"></select><select id="wd-actions" aria-label="补货跟进 / Replenishment"></select><details id="wd-columns"><summary id="wd-columns-label"></summary><div id="wd-columns-options"></div></details><button type="button" id="wd-trend"></button>';
   document.querySelector('#panel-vertical .table-wrap').before(tools);
   document.getElementById('wd-quality').addEventListener('change',e=>{quality=e.target.value;applyVerticalFilters();});
@@ -2395,6 +2515,18 @@ refreshStatusesFromRelay();
   document.getElementById('wd-columns-options').addEventListener('change',e=>{const i=+e.target.dataset.column;if(!Number.isFinite(i))return;e.target.checked?hiddenCols.delete(i):hiddenCols.add(i);applyColumns();save();});
   ['v','h'].forEach(prefix=>{
     const toolbar=document.querySelector(`#panel-${prefix==='v'?'vertical':'horizontal'} .panel-toolbar`);
+    const more=document.createElement('details');more.className='wd-more';more.id='wd-'+prefix+'-more';more.innerHTML=`<summary id="wd-${prefix}-more-label"></summary><div class="wd-more-body"></div>`;
+    toolbar.insertBefore(more,toolbar.querySelector('.btn-export'));
+    const body=more.querySelector('.wd-more-body');
+    more.addEventListener('toggle',()=>{if(more.open) requestAnimationFrame(()=>{
+      body.style.transform='';
+      const rect=body.getBoundingClientRect(), scale=rect.width/body.offsetWidth||1;
+      const min=document.getElementById('sidebar').getBoundingClientRect().right+7;
+      const left=Math.min(Math.max(rect.left,min),innerWidth-rect.width-10);
+      body.style.transform=`translateX(${(left-rect.left)/scale}px)`;
+    });});
+    if(prefix==='v'){body.appendChild(document.getElementById('vSystem'));body.appendChild(document.getElementById('vAlert'));body.appendChild(tools);}
+    else body.appendChild(document.getElementById('hSub'));
     const reset=document.createElement('button');reset.type='button';reset.className='btn-export';reset.id='wd-'+prefix+'-reset';toolbar.insertBefore(reset,toolbar.querySelector('.count-label'));
     reset.addEventListener('click',()=>{
       document.getElementById(prefix+'Search').value='';
@@ -2406,8 +2538,10 @@ refreshStatusesFromRelay();
     const empty=document.createElement('div');empty.id='wd-'+prefix+'-empty';empty.className='wd-empty';empty.hidden=true;toolbar.parentElement.appendChild(empty);
   });
   document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{kpis();save();}));
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelectorAll('.ms-select.open').forEach(el=>el.classList.remove('open'));document.getElementById('wd-columns').open=false;closeItiModal();}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelectorAll('.ms-select.open').forEach(el=>el.classList.remove('open'));document.querySelectorAll('.wd-more[open],#wd-info[open],#wd-columns[open]').forEach(d=>d.open=false);closeItiModal();}});
+  document.addEventListener('click',event=>{document.querySelectorAll('.wd-more[open],#wd-info[open]').forEach(d=>{if(!d.contains(event.target))d.open=false;});});
   document.getElementById('wd-trend').addEventListener('click',()=>{
+    document.getElementById('wd-v-more').open=false;
     const rows=currentRows(); if(!rows.length){toast(text('请先选择有记录的SKU','Select a SKU with records first'));return;}
     const options=rows.map(r=>`<option value="${escAttr(key(r))}">${esc(r[V.SKU]+' · '+whShort(r[V.Warehouse])+' · '+r[V.System])}</option>`).join('');
     document.getElementById('itiModalTitle').textContent=text('真实库存快照趋势','Inventory snapshot history');
