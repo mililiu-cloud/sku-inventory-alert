@@ -618,14 +618,62 @@ button.kpi-card .value{font-size:25px;font-weight:650}
 #wideTable thead th.wd-wh-start{border-left:1px solid var(--line-strong)}
 #wideTable tbody td.wd-wh-start{border-left:1px solid color-mix(in srgb,var(--line-strong) 55%,transparent)}
 /* Warehouse identity uses muted title colors; risk numbers retain their own palette. */
-.wd-wh-tone-0{--wd-wh-color:light-dark(#3d678d,#a0bdd7)}
-.wd-wh-tone-1{--wd-wh-color:light-dark(#765f8c,#c2aed8)}
-.wd-wh-tone-2{--wd-wh-color:light-dark(#32787b,#92c9c7)}
-.wd-wh-tone-3{--wd-wh-color:light-dark(#88617d,#d0adc6)}
-.wd-wh-tone-4{--wd-wh-color:light-dark(#626b96,#b0b8dd)}
-.wd-wh-tone-5{--wd-wh-color:light-dark(#677549,#bbc69b)}
+.wd-wh-tone-0{--wd-wh-color:light-dark(#3d5771,#b0c4d8)}
+.wd-wh-tone-1{--wd-wh-color:light-dark(#5f3d71,#cbb0d8)}
+.wd-wh-tone-2{--wd-wh-color:light-dark(#3d716c,#b0d8d5)}
+.wd-wh-tone-3{--wd-wh-color:light-dark(#713d57,#d8b0c4)}
+.wd-wh-tone-4{--wd-wh-color:light-dark(#3d3d71,#b0b0d8)}
+.wd-wh-tone-5{--wd-wh-color:light-dark(#57713d,#c4d8b0)}
+.wd-wh-tone-6{--wd-wh-color:light-dark(#3d6471,#b0ced8)}
+.wd-wh-tone-7{--wd-wh-color:light-dark(#713d71,#d8b0d8)}
+.wd-wh-tone-8{--wd-wh-color:light-dark(#3d715b,#b0d8c8)}
+.wd-wh-tone-9{--wd-wh-color:light-dark(#715b3d,#d8c8b0)}
+.wd-wh-tone-10{--wd-wh-color:light-dark(#4a3d71,#bab0d8)}
+.wd-wh-tone-11{--wd-wh-color:light-dark(#41713d,#b4d8b0)}
+.wd-wh-tone-12{--wd-wh-color:light-dark(#573d71,#c4b0d8)}
+.wd-wh-tone-13{--wd-wh-color:light-dark(#714e3d,#d8beb0)}
+.wd-wh-tone-14{--wd-wh-color:light-dark(#3d6c71,#b0d5d8)}
+.wd-wh-tone-15{--wd-wh-color:light-dark(#713d4a,#d8b0ba)}
+.wd-wh-tone-16{--wd-wh-color:light-dark(#3d714a,#b0d8ba)}
+.wd-wh-tone-17{--wd-wh-color:light-dark(#3d4a71,#b0bad8)}
 [class*="wd-wh-tone-"] .wd-warehouse-title{color:var(--wd-wh-color);border-color:color-mix(in srgb,var(--wd-wh-color) 25%,var(--head));background:color-mix(in srgb,var(--wd-wh-color) 6%,var(--head))}
 [class*="wd-wh-tone-"] .wd-warehouse-title::before{content:'';display:inline-block;width:3px;height:11px;margin-right:6px;vertical-align:-1px;border-radius:1px;background:currentColor}
+
+/* Satin finish: compact geometry and all data/risk semantics stay unchanged. */
+:root{
+  --wd-sheen:light-dark(#ffffffb8,#ffffff12);
+  --wd-rim:light-dark(#fffffff0,#ffffff22);
+  --wd-shadow:light-dark(#614b3514,#00000038);
+  --wd-soft-shadow:light-dark(#614b350b,#00000022);
+  --wd-control-shine:light-dark(#ffffffb3,#ffffff0f);
+  --wd-surface:linear-gradient(150deg,var(--wd-sheen),transparent 48%),linear-gradient(180deg,var(--card),color-mix(in srgb,var(--head) 12%,var(--card)));
+}
+body{font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-optical-sizing:auto;text-rendering:optimizeLegibility;background-image:radial-gradient(ellipse at 70% 0,light-dark(#ffffffa3,#ffffff05),transparent 65%);background-attachment:fixed}
+#sidebar{background-image:linear-gradient(130deg,var(--wd-sheen),transparent 44%);box-shadow:1px 0 0 var(--wd-rim),4px 0 20px var(--wd-soft-shadow)}
+#topbar{background-image:linear-gradient(180deg,var(--wd-sheen),transparent);box-shadow:inset 0 1px var(--wd-rim),0 3px 14px var(--wd-soft-shadow)}
+#topbar h1{font-weight:650;letter-spacing:-.035em}
+#sidebar .nav-item.active{background-image:linear-gradient(160deg,var(--wd-sheen),transparent 70%);box-shadow:inset 0 1px var(--wd-rim),inset 3px 0 color-mix(in srgb,var(--accent) 50%,var(--grey-bg)),0 3px 9px var(--wd-soft-shadow)}
+.kpi-card,button.kpi-card{background:var(--wd-surface);border-color:color-mix(in srgb,var(--line-strong) 75%,var(--card));box-shadow:inset 0 1px var(--wd-rim),0 2px 3px var(--wd-soft-shadow),0 6px 16px var(--wd-soft-shadow);border-radius:10px}
+.kpi-card .label{font-weight:550;letter-spacing:.015em}
+.kpi-card .value{letter-spacing:-.035em;font-variant-numeric:tabular-nums lining-nums}
+.kpi-card .wd-alert-skus{letter-spacing:0}
+.panel-card{box-shadow:inset 0 1px var(--wd-rim),0 4px 18px var(--wd-soft-shadow);border-color:var(--line-strong)}
+.panel-toolbar{background-image:linear-gradient(180deg,var(--wd-sheen),transparent 95%);box-shadow:inset 0 1px var(--wd-rim)}
+.panel-toolbar input,.panel-toolbar select,.panel-toolbar .ms-select-btn,.panel-toolbar .btn-export,.wd-more>summary,#wd-theme,#langToggle button.active,.wd-data-tools select,.wd-data-tools button,.wd-data-tools summary{
+  background-image:linear-gradient(180deg,var(--wd-control-shine),transparent 85%);box-shadow:inset 0 1px var(--wd-rim),0 2px 4px var(--wd-soft-shadow);transition:border-color .16s,box-shadow .16s;
+}
+.panel-toolbar .btn-export:hover,.ms-select-btn:hover,.wd-more>summary:hover,#wd-theme:hover{box-shadow:inset 0 1px var(--wd-rim),0 3px 9px var(--wd-shadow)}
+.panel-toolbar input:focus,.panel-toolbar select:focus{box-shadow:inset 0 1px var(--wd-rim),0 0 0 2px color-mix(in srgb,var(--accent) 12%,transparent)}
+.ms-select-panel,.wd-more-body,.wd-info-popover,#wd-columns-options{background-image:linear-gradient(145deg,var(--wd-control-shine),transparent 52%);box-shadow:inset 0 1px var(--wd-rim),0 10px 28px var(--wd-shadow)}
+#wideTable thead tr:first-child>th,#vertTable thead th{box-shadow:inset 0 1px var(--wd-rim)}
+.wd-warehouse-title,.wh-summary-wh .wd-warehouse-title{background-image:linear-gradient(180deg,var(--wd-control-shine),transparent 90%);box-shadow:inset 0 1px var(--wd-rim),0 1px 3px var(--wd-soft-shadow);letter-spacing:.01em}
+.wd-warehouse-title::before{box-shadow:inset 0 1px #ffffff50,0 0 0 1px #00000005}
+.wd-risk-chip:not(:disabled){background-image:linear-gradient(180deg,var(--wd-control-shine),transparent);box-shadow:inset 0 1px var(--wd-rim)}
+.wd-stock-signal,.wd-cover-pill{box-shadow:inset 0 1px color-mix(in srgb,var(--wd-rim) 55%,transparent)}
+.footnotes{background-image:linear-gradient(160deg,var(--wd-control-shine),transparent 55%);box-shadow:inset 0 1px var(--wd-rim)}
+#itiModal{box-shadow:inset 0 1px var(--wd-rim),0 24px 70px #00000030}
+#itiModal .modal-head{background-image:linear-gradient(180deg,var(--wd-sheen),transparent)}
+@media(prefers-reduced-motion:reduce){.panel-toolbar input,.panel-toolbar select,.panel-toolbar .ms-select-btn,.panel-toolbar .btn-export,.wd-more>summary,#wd-theme{transition:none}}
 
 </style>
 </head>
@@ -1483,7 +1531,7 @@ function renderWideHead(visibleIdx, summaryOn){
   };
   if(summaryOn) add(t.hSummary(document.getElementById('hSub').value),'wh-group-a wh-summary-wh');
   // Use the original warehouse index so filtering never changes its identifying color.
-  idx.forEach((gi,pos)=>add(HG.wh_headers[gi],(pos%2?'wh-group-b':'wh-group-a')+' wd-wh-tone-'+(gi%6),HG.wh_region[gi].join(' / ')+' · '+HG.wh_headers[gi]));
+  idx.forEach((gi,pos)=>add(HG.wh_headers[gi],(pos%2?'wh-group-b':'wh-group-a')+' wd-wh-tone-'+gi,HG.wh_region[gi].join(' / ')+' · '+HG.wh_headers[gi]));
   thead.appendChild(warehouses);thead.appendChild(metrics);
 }
 
