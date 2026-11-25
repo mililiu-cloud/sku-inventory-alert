@@ -571,6 +571,9 @@ th,td{padding:8px 10px}
 #wideTable .sk3{min-width:148px;max-width:170px}
 #wideTable .sk4{min-width:76px}
 #wideTable .sk2,#wideTable .sk3{box-shadow:1px 0 0 var(--line)}
+#wideTable .sk2{left:var(--wd-pin-sk2,0px)}#wideTable .sk3{left:var(--wd-pin-sk3,0px)}
+#vertTable .sv0{left:var(--wd-pin-sv0,0px)}#vertTable .sv1{left:var(--wd-pin-sv1,0px)}#vertTable .sv2{left:var(--wd-pin-sv2,0px)}#vertTable .sv3{left:var(--wd-pin-sv3,0px)}#vertTable .sv4{left:var(--wd-pin-sv4,0px)}
+#wideTable thead tr:nth-child(2) th{top:var(--wd-head-row1,0px)}
 .wd-show-classification .wd-compact-group{display:none}
 .wd-compact-group{white-space:nowrap}
 .wd-category-choice{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);padding:4px}
@@ -669,7 +672,7 @@ body{font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI","Ping
 .wd-warehouse-title,.wh-summary-wh .wd-warehouse-title{background-image:linear-gradient(180deg,var(--wd-control-shine),transparent 90%);box-shadow:inset 0 1px var(--wd-rim),0 1px 3px var(--wd-soft-shadow);letter-spacing:.01em}
 .wd-warehouse-title::before{box-shadow:inset 0 1px #ffffff50,0 0 0 1px #00000005}
 .wd-risk-chip:not(:disabled){background-image:linear-gradient(180deg,var(--wd-control-shine),transparent);box-shadow:inset 0 1px var(--wd-rim)}
-.wd-stock-signal,.wd-cover-pill{box-shadow:inset 0 1px color-mix(in srgb,var(--wd-rim) 55%,transparent)}
+/* Keep shine on the few surrounding surfaces; hundreds of data markers stay inexpensive. */
 .footnotes{background-image:linear-gradient(160deg,var(--wd-control-shine),transparent 55%);box-shadow:inset 0 1px var(--wd-rim)}
 #itiModal{box-shadow:inset 0 1px var(--wd-rim),0 24px 70px #00000030}
 #itiModal .modal-head{background-image:linear-gradient(180deg,var(--wd-sheen),transparent)}
@@ -1347,27 +1350,35 @@ function renderVerticalBody(){
 // content width varies by language/data and can't be hardcoded in CSS
 function applyStickyOffsets(tableId, nCols, prefix){
   const table = document.getElementById(tableId);
-  if(tableId==='wideTable'){
-    let left=0;
-    [2,3].forEach(i=>{const head=table.querySelector('thead .sk'+i);table.querySelectorAll('.sk'+i).forEach(cell=>cell.style.left=left+'px');left+=head?head.offsetWidth:0;});
-    return;
-  }
-
-  const thead = table.querySelector('thead');
-  if (!thead) return;
-  // Find identity headers across the whole thead, including any row-spanning cells.
-  const widths = [];
-  for (let i = 0; i < nCols; i++){
-    const th = thead.querySelector('.'+prefix+i);
-    // offsetWidth is in the element's own (unzoomed) px, which is what `left` is in;
-    // getBoundingClientRect would be scaled by the page zoom and misalign the pinned columns
-    widths.push(th ? th.offsetWidth : 0);
-  }
+  if(!table || document.body.classList.contains('wd-locked') || table.closest('.panel-card')?.style.display==='none')return;
+  const rows=tableId==='wideTable'?hDisplayRows:vDisplayRows;
+  const key=[LANG,innerWidth,innerHeight,document.body.className,table.className,Array.from(table.querySelectorAll('thead th')).map(th=>th.textContent+Number(th.hidden)).join('|')].join('~');
+  const cached=table._wdGeometry;
+  if(cached&&cached.key===key&&cached.rows.length===rows.length&&rows.every((tr,i)=>tr===cached.rows[i]))return;
+  const columns=tableId==='wideTable'?[2,3]:Array.from({length:nCols},(_,i)=>i);
+  // Read all widths before writing. CSS variables pin every row in one operation per column.
+  const widths=columns.map(i=>table.querySelector('thead .'+prefix+i)?.offsetWidth||0);
   let left = 0;
-  for (let i = 0; i < nCols; i++){
-    table.querySelectorAll('.'+prefix+i).forEach(cell=>{ cell.style.left = left + 'px'; });
-    left += widths[i];
-  }
+  columns.forEach((i,pos)=>{const name='--wd-pin-'+prefix+i,value=left+'px';if(table.style.getPropertyValue(name)!==value)table.style.setProperty(name,value);left+=widths[pos];});
+  table._wdGeometry={key,rows:rows.slice()};table._wdGeometryPass=(table._wdGeometryPass||0)+1;
+}
+
+// Filtered-out rows are detached; active view rows remain reusable across tab switches.
+let WD_MANAGED_TABLES=false,WD_BATCH_LAYOUT=false;
+const vRowPark=document.createDocumentFragment(),hRowPark=document.createDocumentFragment();
+let vDisplayRows=[],hDisplayRows=[];
+function mountDashboardRows(id,rows,park){
+  const body=document.querySelector('#'+id+' tbody'),wanted=new Set(rows);
+  Array.from(body.children).forEach(tr=>{if(!wanted.has(tr))park.appendChild(tr);});
+  rows.forEach((tr,i)=>{if(body.children[i]!==tr)body.insertBefore(tr,body.children[i]||null);});
+}
+function syncDashboardTables(){
+  if(!WD_MANAGED_TABLES||WD_BATCH_LAYOUT)return;
+  const wide=document.getElementById('panel-horizontal').style.display!=='none';
+  mountDashboardRows('vertTable',vDisplayRows,vRowPark);
+  mountDashboardRows('wideTable',hDisplayRows,hRowPark);
+  if(wide){applyStickyOffsets('wideTable',N_ID,'sk');applyWideHeadOffsets();}
+  else applyStickyOffsets('vertTable',N_STICKY_V,'sv');
 }
 
 let vFiltered = DATA.vrows;
@@ -1431,6 +1442,7 @@ function initVerticalControls(){
 // this layer only renders and filters.
 // ============================================================================
 const HG = DATA.hgrid;
+const HG_FLAT_ROWS=HG.groups.flatMap(g=>g.rows);
 
 // which warehouse-column indices (into HG.wh_meta) are visible: the selected region,
 // optionally narrowed further by the warehouse multi-select
@@ -1479,16 +1491,13 @@ function coverValueHtml(v, rate){
   return `<span class="wd-cover-pill ${band === 'd-red' ? 'wd-cover-red' : 'wd-cover-amber'}" title="${escAttr(hint)}">${label}</span>`;
 }
 
-// The wide table has THREE header rows (band / warehouse / metrics). With every <th> at top:0 they
-// piled on top of each other when the table scrolled vertically, so each row is pinned below the
-// rows above it (the 4 ID cells span all three rows and stay at top:0).
+// Two header levels share one measured row offset; cached geometry avoids forced layout on repeat switches.
 function applyWideHeadOffsets(){
-  const rows = document.querySelectorAll('#wideTable thead tr');
-  let top = 0;
-  rows.forEach(tr=>{
-    tr.querySelectorAll('th').forEach(th=>{ if (!th.classList.contains('sticky')) th.style.top = top + 'px'; });
-    top += tr.offsetHeight;
-  });
+  const table=document.getElementById('wideTable');if(document.body.classList.contains('wd-locked')||table.closest('.panel-card')?.style.display==='none')return;
+  if(table._wdHeadOffsetPass===table._wdGeometryPass&&table.style.getPropertyValue('--wd-head-row1'))return;
+  const top=(table.querySelector('thead tr')?.offsetHeight||0)+'px';
+  if(table.style.getPropertyValue('--wd-head-row1')!==top)table.style.setProperty('--wd-head-row1',top);
+  table._wdHeadOffsetPass=table._wdGeometryPass;
 }
 
 // Header font colours of the wide table (black background everywhere). Each sub-group (US, CA,
@@ -1508,17 +1517,20 @@ function wideHeadColors(idx){
   });
 }
 
-// head is rebuilt on language switch only (metric labels differ); ALL warehouse groups are
-// always rendered (tagged with a wg{i} class) -- the System/Warehouse filter hides groups via
-// a tiny injected <style> rule (updateWideColumnVisibility) instead of touching the DOM
+// Only selected warehouse groups are built. Headers and detached body groups are reused
+// while warehouse selection, language and layout remain compatible.
 // Two header rows: warehouse (region/sub-region in tooltip) > metrics.
 // Unlike the body (which hides columns with a CSS rule), the head is REBUILT from the
 // currently visible columns -- a band's colSpan can't be fixed up by display:none, so
 // hiding one warehouse inside a band would otherwise leave the band too wide.
+let hHeadSignature='';
 function renderWideHead(visibleIdx, summaryOn){
   const t = I18N[LANG];
   const idx = visibleIdx || HG.regions.find(r=>r.key===HG.default_region).idx;
   const thead = document.querySelector('#wideTable thead');
+  const signature=[LANG,idx.join(','),summaryOn,document.getElementById('hSub').value,t.hIdHeaders.join(','),t.hMetricLabels.join(',')].join('|');
+  if(signature===hHeadSignature&&thead.children.length)return;
+  hHeadSignature=signature;
   thead.innerHTML = '';
   const warehouses = document.createElement('tr'), metrics = document.createElement('tr');
   t.hIdHeaders.forEach((h,i)=>{
@@ -1539,8 +1551,12 @@ let wideTrList = [];   // data <tr> elements only (subtotal/total rows are track
 let hRowMeta = [];     // {sku, name, master, sub, hasIdx} per data row, for fast filtering
 let hSubtotalTrs = []; // {tr, master} so an empty group can be hidden along with its 小计
 let hGrandTr = null;   // the 总计 <tr>, recomputed on every filter change
+let hRenderedIdx=[],hRenderedSignature='',hBodyLanguage='',hAllTrList=[];
+const hBodyCache=new Map();
+const hRenderedPosition=new Map();
+function wideCellIndex(gi,mi){const pos=hRenderedPosition.get(gi);return pos===undefined?-1:N_ID+HG.metrics_zh.length+pos*HG.metrics_zh.length+mi;}
 
-// number of pinned ID columns in the wide table: Master / Sub / 产品名称 / 易仓SKU / Status
+// Five identity columns retain stable data/export indices; Product and SKU are pinned.
 const N_ID = 5;
 const STATUS_OPTS = HG.status_options || ['Active','CSC','Phase Out','EOL','Other'];
 const STATUS_ORDER = {}; STATUS_OPTS.forEach((v,i)=>STATUS_ORDER[v]=i);
@@ -1584,6 +1600,9 @@ function paintStatusCell(td, r, visibleIdx){
   const t = I18N[LANG];
   const st = rowStatus(r, visibleIdx);
   const sb = editSubOf(visibleIdx);
+  const signature=JSON.stringify([LANG,st,sb,!!STATUS_RELAY,EDIT.on]);
+  if(td._wdStatusSignature===signature)return;
+  td._wdStatusSignature=signature;
   td.className = 'sticky sk4 st-cell';
   if (STATUS_RELAY && EDIT.on && sb && !st.mixed){
     const opts = STATUS_OPTS.slice();
@@ -1702,9 +1721,30 @@ function hCells(cells, gi, sku, meta, fallback, extraCls){
   return out.join('');
 }
 
-function renderWideBody(){
+function refreshWideBodyLabels(){
+  if(hBodyLanguage===LANG)return;
+  const t=I18N[LANG];
+  hSubtotalTrs.forEach(({tr,master})=>{tr.children[0].textContent=t.hSubtotal(master);tr.querySelector('.wd-compact-group').textContent=t.hSubtotal(master);});
+  if(hGrandTr){hGrandTr.children[0].textContent=t.hGrandTotal;hGrandTr.querySelector('.wd-compact-group').textContent=t.hGrandTotal;}
+  hAllTrList.forEach(tr=>tr.querySelectorAll('.wd-cover-pill').forEach(p=>{
+    const range=p.classList.contains('wd-cover-red')?`< ${HG.thresholds.red}`:`${HG.thresholds.red}–${HG.thresholds.amber}`;
+    p.title=LANG==='zh'?`天数色阶 ${range} 天；库存告警仍按各平台安全水位判断`:`Cover band: ${range} days; stock alerts follow platform safety levels`;
+  }));
+  hBodyLanguage=LANG;
+  const cached=hBodyCache.get(hRenderedSignature);if(cached)cached.language=LANG;
+}
+function renderWideBody(visibleIdx){
+  const idx=visibleIdx||getVisibleWhIndices(),signature=idx.join(',');
+  if(signature===hRenderedSignature&&wideTrList.length){refreshWideBodyLabels();return;}
+  hRenderedSignature=signature;hRenderedIdx=idx.slice();hRenderedPosition.clear();idx.forEach((gi,pos)=>hRenderedPosition.set(gi,pos));
   const t = I18N[LANG];
   const tbody = document.querySelector('#wideTable tbody');
+  const cached=hBodyCache.get(signature);
+  if(cached){
+    tbody.replaceChildren();hRowPark.replaceChildren(...cached.all);
+    hAllTrList=cached.all;wideTrList=cached.rows;hRowMeta=cached.meta;hSubtotalTrs=cached.subtotals;hGrandTr=cached.grand;hBodyLanguage=cached.language;
+    hBodyCache.delete(signature);hBodyCache.set(signature,cached);refreshWideBodyLabels();return;
+  }
   const html = [];
   const rowIndex = [];   // parallel to the data <tr>s that end up in the DOM
   const subIndex = [];   // {domRow, master}
@@ -1719,7 +1759,7 @@ function renderWideBody(){
       html.push(`<td class="sticky sk3">${esc(r.sku)}</td>`);
       html.push('<td class="sticky sk4 st-cell">-</td>');
       html.push(hSummaryCells());
-      HG.wh_meta.forEach((m, gi)=> html.push(hCells(r.cells, gi, r.sku, m, r.avg_fallback[gi], '')));
+      idx.forEach(gi=>html.push(hCells(r.cells,gi,r.sku,HG.wh_meta[gi],r.avg_fallback[gi],'')));
       html.push('</tr>');
       const hasIdx = new Set();
       r.cells.forEach((c,i)=>{ if (c !== null) hasIdx.add(i); });
@@ -1731,7 +1771,7 @@ function renderWideBody(){
     html.push(`<td class="sticky sk0">${esc(t.hSubtotal(g.master))}</td>`);
     html.push(`<td class="sticky sk1"></td><td class="sticky sk2"><span class="wd-compact-group">${esc(t.hSubtotal(g.master))}</span></td><td class="sticky sk3"></td><td class="sticky sk4"></td>`);
     html.push(hSummaryCells());
-    HG.wh_meta.forEach((m, gi)=> html.push(hCells(g.subtotal, gi, null, m, false, '')));
+    idx.forEach(gi=>html.push(hCells(g.subtotal,gi,null,HG.wh_meta[gi],false,'')));
     html.push('</tr>');
     subIndex.push({ domRow, master: g.master });
     domRow++;
@@ -1742,15 +1782,21 @@ function renderWideBody(){
   html.push(`<td class="sticky sk0">${esc(t.hGrandTotal)}</td>`);
   html.push(`<td class="sticky sk1"></td><td class="sticky sk2"><span class="wd-compact-group">${esc(t.hGrandTotal)}</span></td><td class="sticky sk3"></td><td class="sticky sk4"></td>`);
   html.push(hSummaryCells());
-  HG.wh_meta.forEach((m, gi)=> html.push(hCells(HG.total, gi, null, m, false, '')));
+  idx.forEach(gi=>html.push(hCells(HG.total,gi,null,HG.wh_meta[gi],false,'')));
   html.push('</tr>');
 
-  tbody.innerHTML = html.join('');
-  const all = Array.from(tbody.children);
+  const staging=document.createElement('tbody');staging.innerHTML=html.join('');
+  const all=Array.from(staging.children);
+  tbody.replaceChildren();hRowPark.replaceChildren(...all);hAllTrList=all;
+  if(!WD_MANAGED_TABLES)tbody.replaceChildren(...all);
   wideTrList = rowIndex.map(x=>all[x.domRow]);
   hRowMeta = rowIndex;
   hSubtotalTrs = subIndex.map(x=>({ tr: all[x.domRow], master: x.master }));
   hGrandTr = all[all.length-1];
+  hBodyLanguage=LANG;
+  hBodyCache.set(signature,{all,rows:wideTrList,meta:hRowMeta,subtotals:hSubtotalTrs,grand:hGrandTr,language:LANG,cells:all.length*(N_ID+HG.metrics_zh.length*(idx.length+1))});
+  // Bound detached caches by both number and size; large "all warehouses" views cannot grow memory indefinitely.
+  while(hBodyCache.size>1&&(hBodyCache.size>3||Array.from(hBodyCache.values()).reduce((n,c)=>n+c.cells,0)>30000))hBodyCache.delete(hBodyCache.keys().next().value);
 }
 
 // hide/show whole warehouse-group columns via one injected <style> rule -- O(1) regardless of
@@ -1812,18 +1858,21 @@ function aggregateFallback(rowList){
 
 // rewrite the metric cells of one aggregate <tr> in place (the 4 sticky label cells stay)
 function paintAggregateRow(tr, cells, fbFlags){
+  const signature=JSON.stringify([LANG,hRenderedSignature,cells,fbFlags]);
+  if(tr._wdAggregateSignature===signature)return;
+  tr._wdAggregateSignature=signature;
   const tds = tr.children;
   const NM = HG.metrics_zh.length;
-  HG.wh_meta.forEach((m, gi)=>{
+  hRenderedIdx.forEach(gi=>{
     const block = cells[gi];
     for (let i=0;i<NM;i++){
-      const td = tds[N_ID + NM + gi*NM + i];   // the pinned ID cells + the 汇总 block come first
+      const td = tds[wideCellIndex(gi,i)];
       if (!td) continue;
       const isDay = HG.days_metric_idx.includes(i);
       const v = block ? block[i] : null;
       if (isDay) td.innerHTML = coverValueHtml(v, block ? block[HG.idx.rate] : null);
       else td.textContent = hFmt(v, false);
-      let cn = 'wg'+gi;
+      let cn = 'wg'+gi+(i===0?' wd-wh-start':'');
       if (block === null || block === undefined) cn += ' grey';
       if (isDay){ const dc = dayClass(v, block ? block[HG.idx.rate] : null); if (dc) cn += ' ' + dc; }
       if (i===HG.idx.weekly && fbFlags && fbFlags[gi]) cn += ' avg-fb';
@@ -1837,6 +1886,7 @@ function paintSummaryCells(tr, blocks, fb, visibleIdx){
   const NM = HG.metrics_zh.length;
   const s = summarizeBlocks(blocks, visibleIdx);
   const anyFb = !!fb && visibleIdx.some(i=>blocks[i] !== null && blocks[i] !== undefined && fb[i]);
+  const signature=JSON.stringify([LANG,s,anyFb]);if(tr._wdSummarySignature===signature)return;tr._wdSummarySignature=signature;
   for (let i=0;i<NM;i++){
     const td = tr.children[N_ID + i];
     if (!td) continue;
@@ -1844,7 +1894,7 @@ function paintSummaryCells(tr, blocks, fb, visibleIdx){
     const v = s ? s[i] : null;
     if (isDay) td.innerHTML = coverValueHtml(v, s ? s[HG.idx.rate] : null);
     else td.textContent = hFmt(v, false);
-    let cn = 'wgS wgS-sum';
+    let cn = 'wgS wgS-sum'+(i===0?' wd-wh-start':'');
     if (!s) cn += ' grey';
     if (isDay){ const dc = dayClass(v, s ? s[HG.idx.rate] : null); if (dc) cn += ' ' + dc; }
     if (i===HG.idx.weekly && anyFb) cn += ' avg-fb';
@@ -1858,14 +1908,14 @@ function applyHorizontalFilter(){
   const q = document.getElementById('hSearch').value.trim().toLowerCase();
   const visibleIdx = getVisibleWhIndices();
   hVisibleIdx = visibleIdx;
+  renderWideBody(visibleIdx);
   const sumOn = showSummary(visibleIdx);
   updateWideColumnVisibility(visibleIdx, sumOn);
   renderWideHead(visibleIdx, sumOn);
   let shown = 0;
   hFiltered = [];
   const liveMasters = new Set();
-  const flatRows = [];
-  HG.groups.forEach(g=> g.rows.forEach(r=> flatRows.push(r)));
+  const flatRows = HG_FLAT_ROWS;
   wideTrList.forEach((tr, idx)=>{
     const meta = hRowMeta[idx];
     let ok = true;
@@ -1904,8 +1954,11 @@ function applyHorizontalFilter(){
     paintStatusCell(tr.children[4], flatRows[idx], visibleIdx);
   });
   updateEditButton();
-  applyStickyOffsets('wideTable', N_ID, 'sk');
-  applyWideHeadOffsets();
+  const shownSkus=new Set(hFiltered.map(r=>r.sku));hDisplayRows=[];
+  let dataIndex=0;
+  HG.groups.forEach((g,groupIndex)=>{g.rows.forEach(r=>{const tr=wideTrList[dataIndex++];if(shownSkus.has(r.sku))hDisplayRows.push(tr);});if(liveMasters.has(g.master))hDisplayRows.push(hSubtotalTrs[groupIndex].tr);});
+  if(hGrandTr)hDisplayRows.push(hGrandTr);
+  if(!WD_MANAGED_TABLES){applyStickyOffsets('wideTable',N_ID,'sk');applyWideHeadOffsets();}
   document.getElementById('hCount').textContent = I18N[LANG].hCount(shown, HG.n_rows);
 }
 
@@ -2380,7 +2433,9 @@ function applyStaticI18n(){
 }
 
 function setLang(lang){
+  if(lang===LANG&&document.documentElement.dataset.wdLanguageReady==='1')return;
   LANG = lang;
+  document.documentElement.dataset.wdLanguageReady='1';
   document.getElementById('btnZh').classList.toggle('active', lang==='zh');
   document.getElementById('btnEn').classList.toggle('active', lang==='en');
   applyStaticI18n();
@@ -2388,9 +2443,6 @@ function setLang(lang){
   renderVerticalHead();
   applyVerticalFilters();
   populateHorizontalSelects();
-  // the 小计/总计 label cells are baked in by renderWideBody and are NOT touched by
-  // paintAggregateRow, so the body has to be rebuilt for them to follow the language
-  renderWideBody();
   applyHorizontalFilter();
   renderFootnotes();
 }
@@ -2408,12 +2460,12 @@ document.querySelectorAll('.nav-item').forEach(t=>{
     // sticky column offsets are measured from getBoundingClientRect(); the first pass runs
     // while this panel is display:none, so every width reads 0 and all four ID columns
     // stack at left:0. Re-measure once the panel is actually on screen.
-    if (which==='horizontal'){ applyStickyOffsets('wideTable', N_ID, 'sk'); applyWideHeadOffsets(); }
+    if(WD_MANAGED_TABLES)syncDashboardTables();
+    else if (which==='horizontal'){ applyStickyOffsets('wideTable', N_ID, 'sk'); applyWideHeadOffsets(); }
   });
 });
 
 renderVerticalBody();
-renderWideBody();
 initVerticalControls();
 initHorizontalControls();
 setLang('zh');
@@ -2481,6 +2533,11 @@ const WD_RISK = (() => {
   let quality = '', action = '', sort = {col:null,dir:1};
   let quickRisk='',detailScope=null,detailScopeLabel='',vScopeRows=DATA.vrows;
   let showCategories=!!prefs.showCategories;
+  const dataIndex=new Map(DATA.vrows.map((r,i)=>[r,i]));
+  const flatWideRows=HG_FLAT_ROWS;
+  let columnSignature='';
+  const verticalRowIndex=new Map(vertTrList.map((tr,i)=>[tr,i]));
+  let uxBatch=false,uxLanguageReady=false,lastKpiHtml='',lastRiskHtml='';
   const hiddenCols = new Set(Array.isArray(prefs.columns) ? prefs.columns.filter(i=>i>=5&&i<DATA.vcols.length) : []);
   const meta = r => DATA.row_meta?.[key(r)] || {};
   const n = v => typeof v === 'number' ? v.toLocaleString(undefined,{maximumFractionDigits:2}) : '—';
@@ -2533,10 +2590,11 @@ const WD_RISK = (() => {
     const rows=baseScopeRows(),flags=rows.map(riskFlags);
     const types=['alert','stockout','no-inbound','late','overdue','enum','forecast'];
     const scope=scopeName();
-    bar.innerHTML=`<span class="wd-risk-context">${esc(scope)}</span>`+types.map(type=>{
+    const html=`<span class="wd-risk-context">${esc(scope)}</span>`+types.map(type=>{
       const count=flags.filter(f=>f[type]).length;
       return `<button type="button" data-risk="${type}" class="wd-risk-chip ${type==='forecast'?'wd-info-chip':''} ${!isWide()&&quickRisk===type?'selected':''}" ${count?'':'disabled'}>${riskName(type)} <b>${count}</b><span>${text('条','rows')}</span></button>`;
     }).join('')+(!isWide()&&detailScope?`<button type="button" data-clear-risk="1" class="wd-risk-clear">${text('清除风险范围','Clear risk scope')} ×</button>`:'');
+    if(html!==lastRiskHtml){bar.innerHTML=html;lastRiskHtml=html;}
     bar.title=text('按当前范围的仓库×SKU记录统计；不同风险类别可能重叠。预测未覆盖不一定是错误。','Warehouse × SKU rows in the current scope; risk categories may overlap. Forecast unavailability may be expected.');
     const note=document.getElementById('wd-scope-note');if(note)note.textContent=!isWide()&&quickRisk?`${riskName(quickRisk)} · ${scope}`:scope;
   }
@@ -2550,26 +2608,28 @@ const WD_RISK = (() => {
     document.getElementById('panel-vertical').scrollIntoView({block:'nearest'});
   }
   function decorateWideStock(){
-    const flat=HG.groups.flatMap(g=>g.rows),NM=HG.metrics_zh.length;
     document.getElementById('wideTable').classList.toggle('wd-show-classification',showCategories);
     wideTrList.forEach((tr,index)=>{
-      const r=flat[index];tr.children[2].title=[r.master,r.sub,r.name].join(' / ');
+      if(tr.style.display==='none')return;
+      const r=flatWideRows[index];tr.children[2].title=[r.master,r.sub,r.name].join(' / ');
       hVisibleIdx.forEach(gi=>{
         const [sys,wh]=HG.wh_meta[gi],source=rowByKey.get([sys,wh,r.sku].join('|'));
         if(!source)return;
-        const td=tr.children[N_ID+NM+gi*NM+HG.idx.days];if(!td)return;
-        td.querySelector('.wd-stock-signal')?.remove();td.classList.add('wd-has-stock-signal');
+        const td=tr.children[wideCellIndex(gi,HG.idx.days)];if(!td)return;
+        if(td.dataset.wdStockLanguage===LANG)return;
+        td.dataset.wdStockLanguage=LANG;td.classList.add('wd-has-stock-signal');
         const code=WD_RISK.code(source[V['Stock Alert']]);
         const label=({ALERT:text('警告','Alert'),Normal:text('正常','Normal'),'N/A':text('无参考','No rate'),NoRestock:text('不补货','No restock')})[code];
         const cls=code==='ALERT'?'alert':code==='Normal'?'normal':'neutral';
-        const button=document.createElement('button');button.type='button';button.className='wd-stock-signal wd-signal-'+cls;button.dataset.rowKey=key(source);button.textContent=label;
+        const button=td.querySelector('.wd-stock-signal')||document.createElement('button');button.type='button';button.className='wd-stock-signal wd-signal-'+cls;button.dataset.rowKey=key(source);button.textContent=label;
         button.title=text('库存状态来自原竖版告警规则。点击查看该仓库SKU明细。','Inventory state follows the original vertical alert rule. Click for warehouse-SKU detail.')+'\n'+source[V['Stock Alert']]+'\n'+rateLabel(meta(source).rate_source)+': '+n(meta(source).rate);
-        td.appendChild(button);
+        if(!button.parentElement)td.appendChild(button);
+        HG.days_metric_idx.forEach(mi=>{const cell=tr.children[wideCellIndex(gi,mi)];if(cell)cell.title=`${rateLabel(meta(source).rate_source)}: ${n(meta(source).rate)} ${text('件/天','units/day')}`;});
       });
     });
-    applyStickyOffsets('wideTable',N_ID,'sk');applyWideHeadOffsets();
   }
   function kpis() {
+    if(uxBatch)return;
     const rows = currentRows(), codes = rows.map(r=>alertCode(r[V['Stock Alert']]));
     const skus = new Set(rows.map(r=>r[V.SKU])).size;
     const stock = column=>rows.reduce((sum,r)=>sum+(typeof r[column]==='number'?r[column]:0),0);
@@ -2579,7 +2639,8 @@ const WD_RISK = (() => {
     const scope=text('按当前视图筛选统计；行数单位为仓库 × SKU','Follows current view filters; one row = warehouse × SKU');
     const tips=[scope,text('当前筛选中的易仓SKU去重计数，同一SKU跨仓只计一次','Distinct SKU values in the current selection; counted once across warehouses'),text('当前筛选中平台可用库存求和，不含在途','Sum of available platform inventory in the current selection; excludes inbound'),text('当前筛选中平台在途库存求和；不重复加表单在途','Sum of platform inbound inventory; form inbound is not added again'),scope,scope,scope,scope];
     const alertSkus=new Set(rows.filter(r=>WD_RISK.code(r[V['Stock Alert']])==='ALERT').map(r=>r[V.SKU])).size;
-    document.querySelector('.kpis').innerHTML = values.map((v,i)=>`<${i===4?'button type="button"':'div'} class="kpi-card ${classes[i]}" data-kpi="${classes[i]}" data-count="${v}" ${i===4?'data-open-alert="1"':''} title="${tips[i]}"><div class="label">${labels[i]}</div><div class="value"><span>${n(v)}</span>${i===4?`<small class="wd-alert-skus">${alertSkus} SKU</small>`:''}</div></${i===4?'button':'div'}>`).join('');
+    const html=values.map((v,i)=>`<${i===4?'button type="button"':'div'} class="kpi-card ${classes[i]}" data-kpi="${classes[i]}" data-count="${v}" ${i===4?'data-open-alert="1"':''} title="${tips[i]}"><div class="label">${labels[i]}</div><div class="value"><span>${n(v)}</span>${i===4?`<small class="wd-alert-skus">${alertSkus} SKU</small>`:''}</div></${i===4?'button':'div'}>`).join('');
+    if(html!==lastKpiHtml){document.querySelector('.kpis').innerHTML=html;lastKpiHtml=html;}
     updateMoreLabels();riskBar();
   }
   function updateMoreLabels(){
@@ -2597,35 +2658,27 @@ const WD_RISK = (() => {
     try { localStorage.setItem(prefsKey,JSON.stringify(state)); } catch (_) {}
   }
   function applyColumns() {
-    document.querySelectorAll('#vertTable tr').forEach(tr=>Array.from(tr.children).forEach((td,i)=>td.hidden=hiddenCols.has(i)));
-    applyStickyOffsets('vertTable',N_STICKY_V,'sv');
+    const signature=[...hiddenCols].sort((a,b)=>a-b).join(',');
+    document.querySelectorAll('#vertTable thead tr').forEach(tr=>Array.from(tr.children).forEach((td,i)=>{if(td.hidden!==hiddenCols.has(i))td.hidden=hiddenCols.has(i);}));
+    if(signature!==columnSignature){vertTrList.forEach(tr=>Array.from(tr.children).forEach((td,i)=>{if(td.hidden!==hiddenCols.has(i))td.hidden=hiddenCols.has(i);}));columnSignature=signature;}
   }
-  function rowHints() {
-    DATA.vrows.forEach((r,i)=>{
-      const tr = vertTrList[i], m=meta(r), flags=qualityFlags(r);
-      [V['Days of Cover'],V['Days of Cover Incl ITI'],V['Minimum Stock Level']].forEach(col=>{
-        tr.children[col].title = `${rateLabel(m.rate_source)}: ${n(m.rate)} ${text('件/天','units/day')}. ${text('横竖版使用同一分母','Same denominator in both views')}`;
-      });
-      tr.children[V['Actual Shipped 4wk']].title = text(`折算值：近30天实际日均 × ${m.window_days||28} 天；不是逐单统计的实际出货量。`,`Estimate: 30-day actual daily × ${m.window_days||28} days; not a shipment count.`);
-      [V['Sales Forecast'],V['Monthly Avg/Day'],V['Weekly Avg/Day']].forEach(col=>tr.children[col].title=missing(r[col])?text('未匹配/未提供预测；不等于零','Forecast unavailable; not zero'):r[col]===0?text('源表结果为0；仍按原规则回退实际日均','Source result is zero; actual daily fallback still applies'):text('来源：Final output，按仓库+SKU匹配','Source: Final output, warehouse + SKU'));
-      tr.children[V.Category].classList.toggle('wd-gap',flags.enum);
-      const status=tr.children[V['Stock Alert']];
-      status.querySelector('.wd-action')?.remove();
-      const code=actionCode(r);
-      status.title=actionText(code);
-      tr.children[V['SKU Name']].title=r[V['SKU Name']]||'';
-      if(code) { const note=document.createElement('small');note.className='wd-action';note.textContent=actionText(code);status.appendChild(note); }
+  function rowHints(tr) {
+    const i=verticalRowIndex.get(tr);if(i===undefined||tr.dataset.wdHintLanguage===LANG)return;
+    tr.dataset.wdHintLanguage=LANG;
+
+    const r=DATA.vrows[i],m=meta(r),flags=qualityFlags(r);
+    [V['Days of Cover'],V['Days of Cover Incl ITI'],V['Minimum Stock Level']].forEach(col=>{
+      tr.children[col].title = `${rateLabel(m.rate_source)}: ${n(m.rate)} ${text('件/天','units/day')}. ${text('横竖版使用同一分母','Same denominator in both views')}`;
     });
-    document.querySelectorAll('#wideTable tbody tr').forEach(tr=>{
-      const sku = tr.children[3]?.textContent;
-      HG.wh_meta.forEach(([sys,wh],gi)=>{
-        const r = rowByKey.get([sys,wh,sku].join('|')); if(!r) return;
-        HG.days_metric_idx.forEach(mi=>{
-          const td=tr.children[N_ID+HG.metrics_zh.length+gi*HG.metrics_zh.length+mi];
-          if(td) td.title=`${rateLabel(meta(r).rate_source)}: ${n(meta(r).rate)} ${text('件/天','units/day')}`;
-        });
-      });
-    });
+    tr.children[V['Actual Shipped 4wk']].title = text(`折算值：近30天实际日均 × ${m.window_days||28} 天；不是逐单统计的实际出货量。`,`Estimate: 30-day actual daily × ${m.window_days||28} days; not a shipment count.`);
+    [V['Sales Forecast'],V['Monthly Avg/Day'],V['Weekly Avg/Day']].forEach(col=>tr.children[col].title=missing(r[col])?text('未匹配/未提供预测；不等于零','Forecast unavailable; not zero'):r[col]===0?text('源表结果为0；仍按原规则回退实际日均','Source result is zero; actual daily fallback still applies'):text('来源：Final output，按仓库+SKU匹配','Source: Final output, warehouse + SKU'));
+    tr.children[V.Category].classList.toggle('wd-gap',flags.enum);
+    const status=tr.children[V['Stock Alert']];
+    status.querySelector('.wd-action')?.remove();
+    const code=actionCode(r);
+    status.title=actionText(code);
+    tr.children[V['SKU Name']].title=r[V['SKU Name']]||'';
+    if(code) { const note=document.createElement('small');note.className='wd-action';note.textContent=actionText(code);status.appendChild(note); }
   }
   function freshness() {
     const asOf = DATA.stats.as_of;
@@ -2659,25 +2712,22 @@ const WD_RISK = (() => {
       <p><b>${text('预测源与历史','Forecast source and history')}</b><br>${f?esc(`${text('最近留存的Forecast刷新','Last recorded Forecast refresh')}: ${f.date||'—'} / ${f.status||'—'}; ${(f.target_weeks||[]).join(', ')}; ${text('源表空白格','Blank source cells')}: ${f.blank_week_cells??'—'}; ${text('源表明确零值格','Explicit zero cells')}: ${f.zero_week_cells??'—'}`):text('本次构建未留存Forecast刷新结果，不能据此声称源表已成功刷新。','No Forecast refresh result was retained in this build; source freshness is unverified.')}<br>${text('趋势仅显示真实日期快照，最多保留最近30个数据日；未采集日期不补值。','Trends show up to 30 real source dates; missing dates are never filled.')}</p>
     </div></details>`;
   }
-  const oldVertical=applyVerticalFilters;
   applyVerticalFilters=function() {
-    oldVertical();
-    vScopeRows=vFiltered.filter(r=>(!detailScope||detailScope.has(key(r)))&&(!quality||qualityFlags(r)[quality])&&(!action||actionCode(r)===action));
+    const q=document.getElementById('vSearch').value.trim().toLowerCase(),system=document.getElementById('vSystem').value,alert=document.getElementById('vAlert').value,warehouses=new Set(getMultiSelectValues('vWarehouse'));
+    vScopeRows=DATA.vrows.filter((r,i)=>{const m=vRowMeta[i];return (!q||m.hay.includes(q))&&(!system||m.sys===system)&&(!warehouses.size||warehouses.has(m.wh))&&(!alert||m.alertCode===alert)&&(!detailScope||detailScope.has(key(r)))&&(!quality||qualityFlags(r)[quality])&&(!action||actionCode(r)===action);});
     vFiltered=vScopeRows.filter(r=>!quickRisk||riskFlags(r)[quickRisk]);
-    const set=new Set(vFiltered);vertTrList.forEach((tr,i)=>tr.style.display=set.has(DATA.vrows[i])?'':'none');
+    const set=new Set(vFiltered);vertTrList.forEach((tr,i)=>{const display=set.has(DATA.vrows[i])?'':'none';if(tr.style.display!==display)tr.style.display=display;});
     if(sort.col!==null) vFiltered.sort((a,b)=>{
       const av=a[sort.col],bv=b[sort.col];if(missing(av))return missing(bv)?0:1;if(missing(bv))return -1;
       return (typeof av==='number'&&typeof bv==='number'?av-bv:String(av).localeCompare(String(bv),LANG==='zh'?'zh-CN':'en'))*sort.dir;
     });
-    const index=new Map(DATA.vrows.map((r,i)=>[r,i]));const frag=document.createDocumentFragment();
-    [...vFiltered,...DATA.vrows.filter(r=>!set.has(r))].forEach(r=>frag.appendChild(vertTrList[index.get(r)]));
-    document.querySelector('#vertTable tbody').appendChild(frag);
+    vDisplayRows=vFiltered.map(r=>vertTrList[dataIndex.get(r)]);
     document.getElementById('vCount').textContent=I18N[LANG].vCount(vFiltered.length,DATA.vrows.length);
     document.getElementById('wd-v-empty').hidden=!!vFiltered.length;
-    applyColumns();kpis();save();
+    applyColumns();syncDashboardTables();kpis();if(!uxBatch)save();
   };
   const oldHorizontal=applyHorizontalFilter;
-  applyHorizontalFilter=function() { oldHorizontal();decorateWideStock();document.getElementById('wd-h-empty').hidden=!!hFiltered.length;kpis();save(); };
+  applyHorizontalFilter=function() { oldHorizontal();decorateWideStock();syncDashboardTables();document.getElementById('wd-h-empty').hidden=!!hFiltered.length;kpis();if(!uxBatch)save(); };
   const oldHead=renderVerticalHead;
   renderVerticalHead=function() {
     oldHead();document.querySelectorAll('#vertTable thead th').forEach((th,i)=>{
@@ -2715,13 +2765,19 @@ const WD_RISK = (() => {
     document.getElementById('wd-columns-options').innerHTML=I18N[LANG].vHeaders.map((label,i)=>i<5?'':`<label><input type="checkbox" data-column="${i}" ${hiddenCols.has(i)?'':'checked'}>${esc(label)}</label>`).join('');
     document.getElementById('wd-theme').setAttribute('aria-label',text('配色主题','Color theme'));
     document.getElementById('wd-theme').innerHTML=Object.entries(THEMES).map(([v,l])=>`<option value="${v}">${l[LANG==='zh'?0:1]}</option>`).join('');document.getElementById('wd-theme').value=document.documentElement.dataset.wdTheme||'warm';
-    rowHints();freshness();help();updateMoreLabels();riskBar();
+    freshness();help();updateMoreLabels();riskBar();
   }
   const oldLang=setLang;
-  setLang=function(lang){document.documentElement.lang=lang==='en'?'en':'zh-CN';labels();oldLang(lang);labels();renderVerticalHead();applyColumns();kpis();try{localStorage.setItem('wd-language',lang);}catch(_){}};
+  setLang=function(lang){
+    if(uxLanguageReady&&lang===LANG)return;
+    uxBatch=true;WD_BATCH_LAYOUT=true;
+    try{document.documentElement.lang=lang==='en'?'en':'zh-CN';oldLang(lang);labels();}
+    finally{uxBatch=false;WD_BATCH_LAYOUT=false;}
+    uxLanguageReady=true;syncDashboardTables();kpis();save();try{localStorage.setItem('wd-language',lang);}catch(_){}
+  };
   window.wdVisibleVerticalColumns=()=>DATA.vcols.map((_,i)=>i).filter(i=>!hiddenCols.has(i));
   window.wdSetDashboardLanguage=lang=>setLang(lang);
-  window.wdInventoryUnlocked=()=>requestAnimationFrame(()=>{applyVerticalFilters();applyHorizontalFilter();applyStickyOffsets('wideTable',N_ID,'sk');applyWideHeadOffsets();});
+  window.wdInventoryUnlocked=()=>requestAnimationFrame(syncDashboardTables);
   const THEMES={light:['云白','Cloud White'],dark:['曜黑','Obsidian'],warm:['燕麦','Oat'],'plaud-ivory':['橙白','Ivory'],'plaud-graphite':['石墨','Graphite'],'plaud-sage':['雾绿','Sage'],'plaud-midnight':['夜蓝','Midnight']};
   let theme='warm';try{theme=localStorage.getItem('wd-inventory-theme')||'warm';}catch(_){}
   if(!THEMES[theme]) theme='warm';document.documentElement.dataset.wdTheme=theme;
@@ -2736,6 +2792,8 @@ const WD_RISK = (() => {
     if(button.dataset.risk)openRiskDetails(button.dataset.risk);
   });
   document.querySelector('.kpis').addEventListener('click',e=>{if(e.target.closest('[data-open-alert]'))openRiskDetails('alert');});
+  vertTrList.forEach((tr,i)=>tr.children[V.Category].classList.toggle('wd-gap',qualityFlags(DATA.vrows[i]).enum));
+  ['mouseover','focusin'].forEach(type=>document.querySelector('#vertTable tbody').addEventListener(type,e=>rowHints(e.target.closest('tr'))));
   document.querySelector('#wideTable tbody').addEventListener('click',e=>{
     const button=e.target.closest('.wd-stock-signal');if(!button)return;
     const row=rowByKey.get(button.dataset.rowKey);if(row)openRiskDetails('all',[row]);
@@ -2744,7 +2802,7 @@ const WD_RISK = (() => {
   document.querySelector('#panel-vertical .table-wrap').before(tools);
   document.getElementById('wd-quality').addEventListener('change',e=>{quality=e.target.value;applyVerticalFilters();});
   document.getElementById('wd-actions').addEventListener('change',e=>{action=e.target.value;applyVerticalFilters();});
-  document.getElementById('wd-columns-options').addEventListener('change',e=>{const i=+e.target.dataset.column;if(!Number.isFinite(i))return;e.target.checked?hiddenCols.delete(i):hiddenCols.add(i);applyColumns();save();});
+  document.getElementById('wd-columns-options').addEventListener('change',e=>{const i=+e.target.dataset.column;if(!Number.isFinite(i))return;e.target.checked?hiddenCols.delete(i):hiddenCols.add(i);applyColumns();syncDashboardTables();save();});
   ['v','h'].forEach(prefix=>{
     const toolbar=document.querySelector(`#panel-${prefix==='v'?'vertical':'horizontal'} .panel-toolbar`);
     const more=document.createElement('details');more.className='wd-more';more.id='wd-'+prefix+'-more';more.innerHTML=`<summary id="wd-${prefix}-more-label"></summary><div class="wd-more-body"></div>`;
@@ -2761,7 +2819,7 @@ const WD_RISK = (() => {
     else {
       body.appendChild(document.getElementById('hSub'));
       const categories=document.createElement('label');categories.className='wd-category-choice';categories.innerHTML='<input type="checkbox" id="wd-show-categories"><span id="wd-category-text"></span>';body.appendChild(categories);
-      const cb=categories.querySelector('input');cb.checked=showCategories;cb.addEventListener('change',()=>{showCategories=cb.checked;decorateWideStock();save();});
+      const cb=categories.querySelector('input');cb.checked=showCategories;cb.addEventListener('change',()=>{showCategories=cb.checked;decorateWideStock();syncDashboardTables();save();});
     }
     const reset=document.createElement('button');reset.type='button';reset.className='btn-export';reset.id='wd-'+prefix+'-reset';toolbar.insertBefore(reset,toolbar.querySelector('.count-label'));
     reset.addEventListener('click',()=>{
@@ -2777,6 +2835,7 @@ const WD_RISK = (() => {
   document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{kpis();save();}));
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelectorAll('.ms-select.open').forEach(el=>el.classList.remove('open'));document.querySelectorAll('.wd-more[open],#wd-info[open],#wd-columns[open]').forEach(d=>d.open=false);closeItiModal();}});
   document.addEventListener('click',event=>{document.querySelectorAll('.wd-more[open],#wd-info[open]').forEach(d=>{if(!d.contains(event.target))d.open=false;});});
+  window.addEventListener('resize',debounce(()=>syncDashboardTables(),100));
   document.getElementById('wd-trend').addEventListener('click',()=>{
     document.getElementById('wd-v-more').open=false;
     const rows=currentRows(); if(!rows.length){toast(text('请先选择有记录的SKU','Select a SKU with records first'));return;}
@@ -2802,7 +2861,8 @@ const WD_RISK = (() => {
   ['vWarehouse','hWarehouse'].forEach(id=>{if(Array.isArray(prefs[id])){multiSelectState[id]=new Set(prefs[id].filter(v=>multiSelectLabels[id]?.has(v)));document.querySelectorAll('#'+id+' input').forEach(el=>el.checked=multiSelectState[id].has(el.value));updateMultiSelectLabel(id);}});
   if(prefs.tab==='horizontal')document.querySelector('[data-tab="horizontal"]').click();
   let language='zh';try{language=localStorage.getItem('wd-language')||'zh';}catch(_){}
-  setLang(language==='en'?'en':'zh');applyVerticalFilters();applyHorizontalFilter();
+  labels();WD_MANAGED_TABLES=true;document.documentElement.dataset.wdLanguageReady='0';
+  setLang(language==='en'?'en':'zh');
 })();
 
 </script></body>
