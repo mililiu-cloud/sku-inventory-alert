@@ -558,6 +558,57 @@ td.name-cell{min-width:180px;max-width:260px;overflow:hidden;text-overflow:ellip
 .st-Active,.badge-normal{color:var(--wd-risk-green);background:color-mix(in srgb,var(--wd-risk-green) 6%,var(--card))}
 .st-EOL,.badge-alert{color:var(--wd-risk-red);background:color-mix(in srgb,var(--wd-risk-red) 6%,var(--card))}
 .st-Phase{color:var(--wd-risk-amber);background:color-mix(in srgb,var(--wd-risk-amber) 6%,var(--card))}
+/* Review: two pinned identity columns, readable type and explicit stock state. */
+table{font-size:14px}
+#vertTable thead th,#wideTable thead th{font-size:12.5px}
+th,td{padding:8px 10px}
+.panel-toolbar input,.panel-toolbar select,.panel-toolbar .ms-select-btn,.panel-toolbar .btn-export,.wd-more>summary{font-size:13px}
+.count-label,#wd-freshness{font-size:12px}
+#wideTable:not(.wd-show-classification) .sk0,#wideTable:not(.wd-show-classification) .sk1{display:none}
+#wideTable .sk0,#wideTable .sk1,#wideTable .sk4{position:static!important;left:auto!important;box-shadow:none}
+#wideTable thead .sk0,#wideTable thead .sk1,#wideTable thead .sk4{position:sticky!important;top:0}
+#wideTable .sk2{min-width:190px;max-width:230px;overflow:hidden;text-overflow:ellipsis}
+#wideTable .sk3{min-width:148px;max-width:170px}
+#wideTable .sk4{min-width:76px}
+#wideTable .sk2,#wideTable .sk3{box-shadow:1px 0 0 var(--line)}
+.wd-show-classification .wd-compact-group{display:none}
+.wd-compact-group{white-space:nowrap}
+.wd-category-choice{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);padding:4px}
+.wd-category-choice input{min-height:0;width:16px;height:16px}
+.st-Active,.st-EOL,.st-Phase{color:var(--muted);background:color-mix(in srgb,var(--muted) 7%,var(--card))}
+.soh-link,.iti-link,.form-link{color:var(--text)!important;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--muted) 65%,transparent);text-underline-offset:3px}
+.wd-stock-signal{display:inline-flex;align-items:center;gap:4px;border:0;border-radius:4px;padding:2px 5px;margin-left:5px;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+.wd-stock-signal::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}
+.wd-signal-alert{color:var(--wd-risk-red);background:color-mix(in srgb,var(--wd-risk-red) 6%,var(--card))}
+.wd-signal-normal{color:var(--wd-risk-green);background:color-mix(in srgb,var(--wd-risk-green) 6%,var(--card))}
+.wd-signal-neutral{color:var(--muted);background:color-mix(in srgb,var(--muted) 5%,var(--card))}
+.wd-stock-signal:hover{outline:1px solid currentColor}
+.wd-has-stock-signal .wd-cover-pill{color:var(--text);background:none;min-width:0;padding-inline:0}
+.wd-has-stock-signal .wd-cover-pill::before{display:none}
+.kpi-card .value{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.wd-alert-skus{font-size:11px;font-weight:500;color:var(--muted)}
+button.kpi-card{text-align:left;font:inherit;cursor:pointer;background:var(--card);border:1px solid var(--line)}
+button.kpi-card:hover{border-color:var(--wd-risk-red)}
+button.kpi-card .value{font-size:25px;font-weight:650}
+#wd-risk-bar{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:thin;padding:7px 0 0;min-height:31px}
+.wd-risk-context{display:none}
+.wd-risk-chip,.wd-risk-clear{display:inline-flex;align-items:center;gap:5px;flex:none;border:1px solid var(--line);border-radius:5px;background:transparent;color:var(--muted);font:inherit;font-size:11.5px;padding:4px 7px;cursor:pointer;white-space:nowrap}
+.wd-risk-chip b{color:var(--text);font-weight:600}.wd-risk-chip>span{font-size:10px}
+.wd-risk-chip.selected,.wd-risk-chip:not(:disabled):hover{color:var(--wd-risk-red);border-color:color-mix(in srgb,var(--wd-risk-red) 45%,var(--line));background:color-mix(in srgb,var(--wd-risk-red) 4%,var(--card))}
+.wd-info-chip.selected{color:var(--text)}
+.wd-risk-chip:disabled{opacity:.55;cursor:default}
+#wd-scope-note{font-size:11px;color:var(--muted);padding-left:6px;border-left:1px solid var(--line)}
+.wd-source-status{border-left:1px solid var(--line);padding-left:8px;font-size:11px;color:var(--muted)}
+.wd-source-failed{color:var(--wd-risk-red)}
+.wd-source-stale,.wd-source-partial{color:var(--wd-risk-amber)}
+.wd-source-ok{color:var(--wd-risk-green)}
+.table-wrap{max-height:calc(100dvh / var(--pz) - 274px)}
+@media(max-width:720px){
+  .kpi-card.alert{order:-1}
+  .wd-risk-chip{font-size:12px;padding:5px 8px}
+  #wd-scope-note{flex-basis:100%;border:0;padding:0}
+  .table-wrap{max-height:calc(100dvh / var(--pz) - 316px)}
+}
 
 </style>
 </head>
@@ -1231,10 +1282,15 @@ function renderVerticalBody(){
 // content width varies by language/data and can't be hardcoded in CSS
 function applyStickyOffsets(tableId, nCols, prefix){
   const table = document.getElementById(tableId);
+  if(tableId==='wideTable'){
+    let left=0;
+    [2,3].forEach(i=>{const head=table.querySelector('thead .sk'+i);table.querySelectorAll('.sk'+i).forEach(cell=>cell.style.left=left+'px');left+=head?head.offsetWidth:0;});
+    return;
+  }
+
   const thead = table.querySelector('thead');
   if (!thead) return;
-  // the wide table has a 3-row header and its sticky cells sit in the first row with
-  // rowSpan=3, so look them up across the whole thead instead of one specific <tr>
+  // Find identity headers across the whole thead, including any row-spanning cells.
   const widths = [];
   for (let i = 0; i < nCols; i++){
     const th = thead.querySelector('.'+prefix+i);
@@ -1390,62 +1446,26 @@ function wideHeadColors(idx){
 // head is rebuilt on language switch only (metric labels differ); ALL warehouse groups are
 // always rendered (tagged with a wg{i} class) -- the System/Warehouse filter hides groups via
 // a tiny injected <style> rule (updateWideColumnVisibility) instead of touching the DOM
-// Three header rows: sub-group band (US / CA / AU ...) > warehouse > metrics.
+// Two header rows: warehouse (region/sub-region in tooltip) > metrics.
 // Unlike the body (which hides columns with a CSS rule), the head is REBUILT from the
 // currently visible columns -- a band's colSpan can't be fixed up by display:none, so
 // hiding one warehouse inside a band would otherwise leave the band too wide.
 function renderWideHead(visibleIdx, summaryOn){
   const t = I18N[LANG];
   const idx = visibleIdx || HG.regions.find(r=>r.key===HG.default_region).idx;
-  const hc = wideHeadColors(idx);
   const thead = document.querySelector('#wideTable thead');
   thead.innerHTML = '';
-  const tr0 = document.createElement('tr');
-  const tr1 = document.createElement('tr');
-  const tr2 = document.createElement('tr');
+  const warehouses = document.createElement('tr'), metrics = document.createElement('tr');
   t.hIdHeaders.forEach((h,i)=>{
-    const th = document.createElement('th');
-    th.textContent = h; th.rowSpan = 3; th.className = 'sticky sk'+i;
-    tr0.appendChild(th);
+    const th=document.createElement('th');th.textContent=h;th.rowSpan=2;th.className='sticky sk'+i;warehouses.appendChild(th);
   });
-  if (summaryOn){
-    const subKey = document.getElementById('hSub').value;
-    const sb = document.createElement('th');
-    sb.textContent = t.hSummary(subKey); sb.colSpan = t.hMetricLabels.length; sb.className = 'wh-band wh-summary-band'; sb.style.color = HEAD_SUMMARY_COLOR;
-    tr0.appendChild(sb);
-    const sw = document.createElement('th');
-    sw.textContent = t.hSummary(subKey); sw.colSpan = t.hMetricLabels.length; sw.className = 'wh-group-a wh-summary-wh'; sw.style.color = HEAD_SUMMARY_COLOR;
-    tr1.appendChild(sw);
-    t.hMetricLabels.forEach(ml=>{ const mth = document.createElement('th'); mth.textContent = ml; mth.className = 'wh-summary-m'; mth.style.color = HEAD_SUMMARY_COLOR; tr2.appendChild(mth); });
-  }
-  // band cells: one per run of consecutive visible columns sharing a sub-group
-  let bandStart = 0;
-  const flushBand = (endExclusive)=>{
-    if (endExclusive <= bandStart) return;
-    const [region, sub] = HG.wh_region[idx[bandStart]];
-    const th = document.createElement('th');
-    th.textContent = (region === sub) ? region : `${region} · ${sub}`;
-    th.colSpan = (endExclusive - bandStart) * t.hMetricLabels.length;
-    th.className = 'wh-band'; th.style.color = hc[bandStart].band;
-    tr0.appendChild(th);
+  const add=(label,cls,title)=>{
+    const th=document.createElement('th');th.textContent=label;th.colSpan=t.hMetricLabels.length;th.className=cls;th.title=title||label;warehouses.appendChild(th);
+    t.hMetricLabels.forEach(ml=>{const m=document.createElement('th');m.textContent=ml;m.className=cls.includes('summary')?'wh-summary-m':'';metrics.appendChild(m);});
   };
-  idx.forEach((gi, pos)=>{
-    if (pos > 0){
-      const prev = HG.wh_region[idx[pos-1]], cur = HG.wh_region[gi];
-      if (prev[0] !== cur[0] || prev[1] !== cur[1]){ flushBand(pos); bandStart = pos; }
-    }
-    const th = document.createElement('th');
-    th.textContent = HG.wh_headers[gi]; th.colSpan = t.hMetricLabels.length;
-    th.className = (pos % 2 === 0 ? 'wh-group-a' : 'wh-group-b'); th.style.color = hc[pos].wh;
-    tr1.appendChild(th);
-    t.hMetricLabels.forEach(ml=>{
-      const mth = document.createElement('th');
-      mth.textContent = ml; mth.style.color = hc[pos].wh;
-      tr2.appendChild(mth);
-    });
-  });
-  flushBand(idx.length);
-  thead.appendChild(tr0); thead.appendChild(tr1); thead.appendChild(tr2);
+  if(summaryOn) add(t.hSummary(document.getElementById('hSub').value),'wh-group-a wh-summary-wh');
+  idx.forEach((gi,pos)=>add(HG.wh_headers[gi],pos%2?'wh-group-b':'wh-group-a',HG.wh_region[gi].join(' / ')+' · '+HG.wh_headers[gi]));
+  thead.appendChild(warehouses);thead.appendChild(metrics);
 }
 
 let wideTrList = [];   // data <tr> elements only (subtotal/total rows are tracked separately)
@@ -1641,7 +1661,7 @@ function renderWideBody(){
     // 小计
     html.push('<tr class="subtotal">');
     html.push(`<td class="sticky sk0">${esc(t.hSubtotal(g.master))}</td>`);
-    html.push('<td class="sticky sk1"></td><td class="sticky sk2"></td><td class="sticky sk3"></td><td class="sticky sk4"></td>');
+    html.push(`<td class="sticky sk1"></td><td class="sticky sk2"><span class="wd-compact-group">${esc(t.hSubtotal(g.master))}</span></td><td class="sticky sk3"></td><td class="sticky sk4"></td>`);
     html.push(hSummaryCells());
     HG.wh_meta.forEach((m, gi)=> html.push(hCells(g.subtotal, gi, null, m, false, '')));
     html.push('</tr>');
@@ -1652,7 +1672,7 @@ function renderWideBody(){
   // 总计
   html.push('<tr class="grand">');
   html.push(`<td class="sticky sk0">${esc(t.hGrandTotal)}</td>`);
-  html.push('<td class="sticky sk1"></td><td class="sticky sk2"></td><td class="sticky sk3"></td><td class="sticky sk4"></td>');
+  html.push(`<td class="sticky sk1"></td><td class="sticky sk2"><span class="wd-compact-group">${esc(t.hGrandTotal)}</span></td><td class="sticky sk3"></td><td class="sticky sk4"></td>`);
   html.push(hSummaryCells());
   HG.wh_meta.forEach((m, gi)=> html.push(hCells(HG.total, gi, null, m, false, '')));
   html.push('</tr>');
@@ -2349,6 +2369,37 @@ refreshStatusesFromRelay();
 })();
 </script>
 <script>
+/* Display-only risk predicates. Stock Alert is the existing source result, never recomputed. */
+const WD_RISK = (() => {
+  function code(value) {
+    const s=String(value||'');
+    return s.includes('NoRestock')?'NoRestock':s.includes('ALERT')?'ALERT':s.includes('Normal')?'Normal':'N/A';
+  }
+  function flags(row,C,date) {
+    const alert=code(row[C['Stock Alert']])==='ALERT';
+    const missing=v=>v===null||v===undefined||['','--','-','N/A'].includes(String(v).trim());
+    const inbound=typeof row[C.ITI]==='number'&&row[C.ITI]>0;
+    const eta=String(row[C.ETA]||'').match(/\d{4}-\d{2}-\d{2}/)?.[0];
+    const days=row[C['Days of Cover']];
+    return {all:true,alert,stockout:alert&&row[C.SOH]===0&&typeof days==='number',
+      'no-inbound':alert&&!inbound,
+      late:alert&&inbound&&!!eta&&typeof days==='number'&&(Date.parse(eta)-Date.parse(date))/86400000>days,
+      overdue:alert&&inbound&&!!eta&&eta<date,
+      enum:[C.Category,C.Serial,C.Status].some(i=>missing(row[i])),
+      forecast:[C['Sales Forecast'],C['Monthly Avg/Day'],C['Weekly Avg/Day']].some(i=>missing(row[i]))};
+  }
+  function forecastState(notice,periods,asOf) {
+    if(!notice)return 'unknown';
+    if(notice.status==='failed')return 'failed';
+    if(notice.status!=='ok'||!notice.date||!periods?.length)return 'unknown';
+    if(notice.date<periods[0][0]||notice.date>asOf)return 'stale';
+    const expected=periods.map(([start,end])=>start.slice(5).replace('-','')+'-'+end.slice(5).replace('-',''));
+    if(!Array.isArray(notice.target_weeks)||expected.some((w,i)=>notice.target_weeks[i]!==w))return 'stale';
+    return Object.values(notice.missing_week_cols||{}).some(n=>n>0)?'partial':'ok';
+  }
+  return Object.freeze({code,flags,forecastState});
+})();
+
 /* Inventory-only improvements. Source quantities and alert thresholds stay in Python. */
 (() => {
   'use strict';
@@ -2360,6 +2411,8 @@ refreshStatusesFromRelay();
   const prefsKey = 'wd-inventory-preferences-v2';
   let prefs = {}; try { prefs = JSON.parse(localStorage.getItem(prefsKey)||'{}'); } catch (_) {}
   let quality = '', action = '', sort = {col:null,dir:1};
+  let quickRisk='',detailScope=null,detailScopeLabel='',vScopeRows=DATA.vrows;
+  let showCategories=!!prefs.showCategories;
   const hiddenCols = new Set(Array.isArray(prefs.columns) ? prefs.columns.filter(i=>i>=5&&i<DATA.vcols.length) : []);
   const meta = r => DATA.row_meta?.[key(r)] || {};
   const n = v => typeof v === 'number' ? v.toLocaleString(undefined,{maximumFractionDigits:2}) : '—';
@@ -2386,23 +2439,80 @@ refreshStatusesFromRelay();
   const actionText = code => ({'no-inbound':text('缺货风险 · 暂无在途','Risk · no inbound'),
     overdue:text('预计到货日已过 · 待核实','ETA passed · verify'),late:text('可能先缺货后到货','Stock may run out before ETA'),
     insufficient:text('含在途仍低于安全水位','Inbound still below safety stock'),check:text('已有在途 · 核实到货','Inbound · check arrival')})[code]||'';
+  const riskFlags=r=>WD_RISK.flags(r,V,DATA.stats.as_of);
+  const isWide=()=>document.getElementById('panel-horizontal').style.display!=='none';
+  const riskName=type=>({all:text('全部记录','All records'),alert:text('库存警告','Stock alerts'),stockout:text('可用为0','Zero available'),
+    'no-inbound':text('警告且无在途','Alert · no inbound'),late:text('到货可能偏晚','Potential late arrival'),overdue:text('预计日期已过','ETA passed'),
+    enum:text('枚举待维护','Enum gaps'),forecast:text('预测未覆盖','Forecast unavailable')})[type]||'';
   function currentRows() {
     if (document.getElementById('panel-horizontal').style.display==='none') return vFiltered;
     const skus = new Set(hFiltered.map(r=>r.sku));
     const wh = new Set(hVisibleIdx.map(i=>HG.wh_meta[i].join('|')));
     return DATA.vrows.filter(r=>skus.has(r[V.SKU])&&wh.has(r[V.System]+'|'+r[V.Warehouse]));
   }
+  function baseScopeRows(){return isWide()?currentRows():vScopeRows;}
+  function scopeName(){
+    if(!isWide()&&detailScope)return detailScopeLabel;
+    if(isWide()){
+      const region=document.getElementById('hRegion').selectedOptions[0]?.textContent||'';
+      const warehouses=getMultiSelectValues('hWarehouse');
+      return region+' · '+(warehouses.length===1?whShort(warehouses[0]):warehouses.length?text(`${warehouses.length}仓库`,`${warehouses.length} warehouses`):text('全部仓库','All warehouses'));
+    }
+    return (document.getElementById('vSystem').value||text('全部平台','All systems'))+' · '+text('当前筛选','current filters');
+  }
+  function riskBar(){
+    const bar=document.getElementById('wd-risk-bar');if(!bar)return;
+    const rows=baseScopeRows(),flags=rows.map(riskFlags);
+    const types=['alert','stockout','no-inbound','late','overdue','enum','forecast'];
+    const scope=scopeName();
+    bar.innerHTML=`<span class="wd-risk-context">${esc(scope)}</span>`+types.map(type=>{
+      const count=flags.filter(f=>f[type]).length;
+      return `<button type="button" data-risk="${type}" class="wd-risk-chip ${type==='forecast'?'wd-info-chip':''} ${!isWide()&&quickRisk===type?'selected':''}" ${count?'':'disabled'}>${riskName(type)} <b>${count}</b><span>${text('条','rows')}</span></button>`;
+    }).join('')+(!isWide()&&detailScope?`<button type="button" data-clear-risk="1" class="wd-risk-clear">${text('清除风险范围','Clear risk scope')} ×</button>`:'');
+    bar.title=text('按当前范围的仓库×SKU记录统计；不同风险类别可能重叠。预测未覆盖不一定是错误。','Warehouse × SKU rows in the current scope; risk categories may overlap. Forecast unavailability may be expected.');
+    const note=document.getElementById('wd-scope-note');if(note)note.textContent=!isWide()&&quickRisk?`${riskName(quickRisk)} · ${scope}`:scope;
+  }
+  function openRiskDetails(type,exactRows){
+    const scope=exactRows||baseScopeRows();
+    detailScopeLabel=scopeName();detailScope=new Set(scope.map(key));quickRisk=type;
+    quality='';action='';document.getElementById('vSearch').value='';document.getElementById('vSystem').value='';document.getElementById('vAlert').value='';
+    multiSelectState.vWarehouse=new Set();populateVerticalSelects();
+    document.getElementById('wd-v-more').open=false;
+    document.querySelector('[data-tab="vertical"]').click();applyVerticalFilters();
+    document.getElementById('panel-vertical').scrollIntoView({block:'nearest'});
+  }
+  function decorateWideStock(){
+    const flat=HG.groups.flatMap(g=>g.rows),NM=HG.metrics_zh.length;
+    document.getElementById('wideTable').classList.toggle('wd-show-classification',showCategories);
+    wideTrList.forEach((tr,index)=>{
+      const r=flat[index];tr.children[2].title=[r.master,r.sub,r.name].join(' / ');
+      hVisibleIdx.forEach(gi=>{
+        const [sys,wh]=HG.wh_meta[gi],source=rowByKey.get([sys,wh,r.sku].join('|'));
+        if(!source)return;
+        const td=tr.children[N_ID+NM+gi*NM+HG.idx.days];if(!td)return;
+        td.querySelector('.wd-stock-signal')?.remove();td.classList.add('wd-has-stock-signal');
+        const code=WD_RISK.code(source[V['Stock Alert']]);
+        const label=({ALERT:text('警告','Alert'),Normal:text('正常','Normal'),'N/A':text('无参考','No rate'),NoRestock:text('不补货','No restock')})[code];
+        const cls=code==='ALERT'?'alert':code==='Normal'?'normal':'neutral';
+        const button=document.createElement('button');button.type='button';button.className='wd-stock-signal wd-signal-'+cls;button.dataset.rowKey=key(source);button.textContent=label;
+        button.title=text('库存状态来自原竖版告警规则。点击查看该仓库SKU明细。','Inventory state follows the original vertical alert rule. Click for warehouse-SKU detail.')+'\n'+source[V['Stock Alert']]+'\n'+rateLabel(meta(source).rate_source)+': '+n(meta(source).rate);
+        td.appendChild(button);
+      });
+    });
+    applyStickyOffsets('wideTable',N_ID,'sk');applyWideHeadOffsets();
+  }
   function kpis() {
     const rows = currentRows(), codes = rows.map(r=>alertCode(r[V['Stock Alert']]));
     const skus = new Set(rows.map(r=>r[V.SKU])).size;
     const stock = column=>rows.reduce((sum,r)=>sum+(typeof r[column]==='number'?r[column]:0),0);
     const values = [rows.length,skus,stock(V.SOH),stock(V.ITI),...['ALERT','Normal','N/A','NoRestock'].map(c=>codes.filter(v=>v===c).length)];
-    const labels = [text('明细行数','Detail rows'),text('涉及SKU数','Unique SKUs'),text('可用库存 · 件','Available · units'),text('在途库存 · 件','Inbound · units'),text('库存警告','Stock alert'),text('库存正常','Normal'),text('无销量参考','No sales rate'),text('不补货','No restock')];
+    const labels = [text('明细 · 条','Detail · rows'),text('涉及SKU · 个','Unique SKUs'),text('可用库存 · 件','Available · units'),text('在途库存 · 件','Inbound · units'),text('警告明细 · 条','Alerts · rows'),text('库存正常 · 条','Normal · rows'),text('无销量参考 · 条','No rate · rows'),text('不补货 · 条','No restock · rows')];
     const classes = ['total','skus','soh','inbound','alert','normal','na','norestock'];
     const scope=text('按当前视图筛选统计；行数单位为仓库 × SKU','Follows current view filters; one row = warehouse × SKU');
     const tips=[scope,text('当前筛选中的易仓SKU去重计数，同一SKU跨仓只计一次','Distinct SKU values in the current selection; counted once across warehouses'),text('当前筛选中平台可用库存求和，不含在途','Sum of available platform inventory in the current selection; excludes inbound'),text('当前筛选中平台在途库存求和；不重复加表单在途','Sum of platform inbound inventory; form inbound is not added again'),scope,scope,scope,scope];
-    document.querySelector('.kpis').innerHTML = values.map((v,i)=>`<div class="kpi-card ${classes[i]}" data-kpi="${classes[i]}" title="${tips[i]}"><div class="label">${labels[i]}</div><div class="value">${n(v)}</div></div>`).join('');
-    updateMoreLabels();
+    const alertSkus=new Set(rows.filter(r=>WD_RISK.code(r[V['Stock Alert']])==='ALERT').map(r=>r[V.SKU])).size;
+    document.querySelector('.kpis').innerHTML = values.map((v,i)=>`<${i===4?'button type="button"':'div'} class="kpi-card ${classes[i]}" data-kpi="${classes[i]}" data-count="${v}" ${i===4?'data-open-alert="1"':''} title="${tips[i]}"><div class="label">${labels[i]}</div><div class="value"><span>${n(v)}</span>${i===4?`<small class="wd-alert-skus">${alertSkus} SKU</small>`:''}</div></${i===4?'button':'div'}>`).join('');
+    updateMoreLabels();riskBar();
   }
   function updateMoreLabels(){
     ['v','h'].forEach(p=>{
@@ -2413,7 +2523,7 @@ refreshStatusesFromRelay();
     });
   }
   function save() {
-    const state = {columns:[...hiddenCols],tab:document.querySelector('.nav-item.active')?.dataset.tab||'vertical'};
+    const state = {columns:[...hiddenCols],showCategories,tab:document.querySelector('.nav-item.active')?.dataset.tab||'vertical'};
     ['vSearch','vSystem','vAlert','hSearch','hRegion','hSub'].forEach(id=>state[id]=document.getElementById(id).value);
     ['vWarehouse','hWarehouse'].forEach(id=>state[id]=getMultiSelectValues(id));
     try { localStorage.setItem(prefsKey,JSON.stringify(state)); } catch (_) {}
@@ -2462,7 +2572,9 @@ refreshStatusesFromRelay();
     const periods=DATA.forecast_periods||[];
     const period=periods.length?text(`目标预测周期：${periods[0][0]} — ${periods.at(-1)[1]} · 当周日均 ÷7，四周日均 ÷28`,`Target forecast window: ${periods[0][0]} — ${periods.at(-1)[1]} · weekly ÷7, four-week ÷28`):'';
     const source=(DATA.collection||[]).map(v=>`${v.platform}: ${v.collected_at} (UTC+8)`).join('\n')||text('未留存各平台独立采集时间。','Per-platform collection timestamps were not saved.');
-    box.innerHTML=`<span class="wd-status-dot"></span><span class="wd-snapshot-label">${stale?text('数据待刷新','Refresh overdue'):text('快照','Snapshot')} <b>${esc(asOf)}</b> · ${esc((DATA.stats.built_at||'').slice(11)||'—')}</span><span class="wd-meta-count">${DATA.stats.n_easku} SKU · ${DATA.stats.n_wh} ${text('仓库','warehouses')}</span><details id="wd-info"><summary>${text('数据口径','Data info')}</summary><div class="wd-info-popover"><p>${text('页面生成于','Page built')} ${esc(DATA.stats.built_at||'—')} (UTC+8)</p><p>${text('周一至六 08:53 自动刷新','Mon–Sat 08:53 automatic refresh')}</p><p id="wd-period">${esc(period)}</p><p>${esc(source)}</p></div></details>`;
+    const fs=WD_RISK.forecastState(DATA.forecast_notice,periods,asOf);
+    const forecastLabel=({ok:text('Forecast已刷新','Forecast refreshed'),failed:text('Forecast刷新失败','Forecast failed'),stale:text('Forecast周期待更新','Forecast window pending'),partial:text('Forecast部分周缺失','Forecast weeks missing'),unknown:text('Forecast待核实','Forecast unverified')})[fs];
+    box.innerHTML=`<span class="wd-status-dot"></span><span class="wd-snapshot-label">${stale?text('库存待刷新','Inventory overdue'):text('库存快照','Inventory')} <b>${esc(asOf)}</b> · ${esc((DATA.stats.built_at||'').slice(11)||'—')}</span><span class="wd-source-status wd-source-${fs}" title="${text('库存和预测分别核对；未留存预测刷新记录时不会标记成功。','Inventory and forecast are checked independently; missing forecast evidence is not marked successful.')}">${forecastLabel}</span><span id="wd-scope-note"></span><details id="wd-info"><summary>${text('数据口径','Data info')}</summary><div class="wd-info-popover"><p>${text('页面生成于','Page built')} ${esc(DATA.stats.built_at||'—')} (UTC+8)</p><p>${text('周一至六 08:53 自动刷新','Mon–Sat 08:53 automatic refresh')}</p><p id="wd-period">${esc(period)}</p><p>${forecastLabel} · ${esc(DATA.forecast_notice?.date||text('未留存刷新记录','No refresh record'))}</p><p>${esc(source)}</p></div></details>`;
   }
   function help() {
     const noRestock=DATA.vrows.filter(r=>alertCode(r[V['Stock Alert']])==='NoRestock').map(r=>`${r[V.System]} / ${whShort(r[V.Warehouse])} / ${r[V.SKU]}`);
@@ -2472,7 +2584,7 @@ refreshStatusesFromRelay();
       <p><b>${text('预测日均','Forecast daily')}</b><br>${text('四周预测日均 = 当周及未来3周预测合计 ÷28；当周预测日均 = 当周预测 ÷7，并非自然月日均。','Four-week daily = current week + next 3 weeks ÷28; weekly daily = current week ÷7. Neither is a calendar-month average.')}</p>
       <p><b>${text('库存天数：两个视图统一','Cover days: same in both views')}</b><br>${text('万邑通/谷仓用四周预测日均；嘀嗒/保宏/京东用当周预测日均。缺失或为0时用近30天实际日均。无正数日均显示 —，不显示无限天。小计按合计库存÷合计有效日均计算。','Winit/GoodCang use four-week daily; NodeWMS/Baohong/JD use weekly daily. Missing or zero uses positive 30-day actual daily. No rate shows —. Subtotals divide total stock by total usable daily demand.')}</p>
       <p><b>${text('折算出货量','Estimated shipment volume')}</b><br>${text('近30天实际日均 ×28天（万邑通/谷仓）或 ×7天（嘀嗒/保宏/京东），不是实际逐单累计。','30-day actual daily ×28 days (Winit/GoodCang) or ×7 (NodeWMS/Baohong/JD); not actual shipment totals.')}</p>
-      <p><b>${text('状态与颜色','Status and colors')}</b><br>${text('警告阈值保持原规则：万邑通/谷仓28天、保宏7天、京东/嘀嗒12天。横版天数底色仍为红<14天、黄14–30天；请以库存警告状态判断是否低于平台安全水位。','Alert thresholds stay at Winit/GoodCang 28d, Baohong 7d, JD/NodeWMS 12d. Wide-view bands remain red <14d, amber 14–30d; use the stock alert status for each platform’s safety threshold.')}</p>
+      <p><b>${text('状态与颜色','Status and colors')}</b><br>${text('警告阈值保持原规则：万邑通/谷仓28天、保宏7天、京东/嘀嗒12天。产品状态仅表示生命周期；库存状态单独判断。含在途天数的小标记仍为红<14天、黄14–30天；请以库存警告状态判断是否低于平台安全水位。','Alert thresholds stay at Winit/GoodCang 28d, Baohong 7d, JD/NodeWMS 12d. Product state describes lifecycle only. Inbound-cover markers remain red <14d, amber 14–30d; use inventory state for platform safety levels.')}</p>
       <p><b>${text('数据缺口','Data gaps')}</b><br>${text('枚举信息待维护按仓库×SKU行统计；预测未覆盖单独展示，配件或无预测仓库可能是正常情况。源表结果为0与未匹配分开显示。','Enum gaps count warehouse × SKU rows. Forecast coverage is separate: accessories and warehouses without forecasts may be expected. Source zero and unavailable values are separate.')}</p>
       <p><b>${text('在途与到货提示','Inbound and ETA hints')}</b><br>${text('在途以平台库存接口为准；逐单明细可能晚于库存接口。到货提示只比对已提供的预计日期，未提供时不猜到货日。','Inbound totals follow inventory APIs; shipment details may lag. ETA hints use provided dates only.')}</p>
       <p><b>${text('不补货','No restock')}</b><br>${text('按源数据规则7判断；当前处于不补货状态的组合：','Determined by source rule 7. Current no-restock combinations:')} ${unique.length?unique.map(esc).join('<br>'):'—'}</p>
@@ -2482,7 +2594,8 @@ refreshStatusesFromRelay();
   const oldVertical=applyVerticalFilters;
   applyVerticalFilters=function() {
     oldVertical();
-    vFiltered=vFiltered.filter(r=>(!quality||qualityFlags(r)[quality])&&(!action||actionCode(r)===action));
+    vScopeRows=vFiltered.filter(r=>(!detailScope||detailScope.has(key(r)))&&(!quality||qualityFlags(r)[quality])&&(!action||actionCode(r)===action));
+    vFiltered=vScopeRows.filter(r=>!quickRisk||riskFlags(r)[quickRisk]);
     const set=new Set(vFiltered);vertTrList.forEach((tr,i)=>tr.style.display=set.has(DATA.vrows[i])?'':'none');
     if(sort.col!==null) vFiltered.sort((a,b)=>{
       const av=a[sort.col],bv=b[sort.col];if(missing(av))return missing(bv)?0:1;if(missing(bv))return -1;
@@ -2496,7 +2609,7 @@ refreshStatusesFromRelay();
     applyColumns();kpis();save();
   };
   const oldHorizontal=applyHorizontalFilter;
-  applyHorizontalFilter=function() { oldHorizontal();document.getElementById('wd-h-empty').hidden=!!hFiltered.length;kpis();save(); };
+  applyHorizontalFilter=function() { oldHorizontal();decorateWideStock();document.getElementById('wd-h-empty').hidden=!!hFiltered.length;kpis();save(); };
   const oldHead=renderVerticalHead;
   renderVerticalHead=function() {
     oldHead();document.querySelectorAll('#vertTable thead th').forEach((th,i)=>{
@@ -2507,13 +2620,17 @@ refreshStatusesFromRelay();
     });applyColumns();
   };
   function labels() {
-    document.getElementById('wd-risk-legend').innerHTML=`<span>${text('天数提示','Cover bands')}</span><span class="wd-legend-red">&lt;${HG.thresholds.red}${text('天','d')}</span><span class="wd-legend-amber">${HG.thresholds.red}–${HG.thresholds.amber}${text('天','d')}</span>`;
+    document.getElementById('wd-risk-legend').innerHTML=`<span>${text('含在途天数提示','Incl. inbound bands')}</span><span class="wd-legend-red">&lt;${HG.thresholds.red}${text('天','d')}</span><span class="wd-legend-amber">${HG.thresholds.red}–${HG.thresholds.amber}${text('天','d')}</span>`;
     document.getElementById('wd-risk-legend').title=text('颜色仅提示天数区间；库存警告仍按各平台原安全水位判断','Colors indicate cover-day bands; stock alerts follow the original platform safety levels');
     I18N.zh.pageTitle='库存看板';I18N.en.pageTitle='Inventory Dashboard';
     I18N.zh.vSystemAll='全部平台';I18N.en.vSystemAll='All systems';
     I18N.zh.vWarehouseAll='全部仓库';I18N.en.vWarehouseAll='All warehouses';
     I18N.zh.vAlertAll='全部库存状态';I18N.en.vAlertAll='All stock states';
     I18N.zh.vSearchPh='搜索 SKU / 名称 / 仓库';I18N.en.vSearchPh='Search SKU / name / warehouse';
+    I18N.zh.hWarehouseAll='全部仓库';I18N.en.hWarehouseAll='All warehouses';
+    I18N.zh.hIdHeaders=['主品类','子品类','产品名称','易仓SKU','产品状态'];I18N.en.hIdHeaders=['Master Category','Sub Category','Product','SKU','Product state'];
+    I18N.zh.hMetricLabels[HG.idx.days]='可用支撑天数 / 库存状态';I18N.en.hMetricLabels[HG.idx.days]='Cover / Inventory state';
+    document.getElementById('wd-category-text').textContent=text('显示品类列','Show category columns');
     if(DATA.preview){const badge=document.getElementById('wd-preview-label');badge.textContent=text('测试预览','Preview');badge.title=text('仅测试页，尚未同步正式版','Test page only; not yet applied to production');}
     I18N.zh.vHeaders[V['Monthly Avg/Day']]='四周预测日均';I18N.en.vHeaders[V['Monthly Avg/Day']]='4-week Forecast Daily';
     I18N.zh.vHeaders[V['Weekly Avg/Day']]='当周预测日均';I18N.en.vHeaders[V['Weekly Avg/Day']]='Current-week Forecast Daily';
@@ -2530,7 +2647,7 @@ refreshStatusesFromRelay();
     document.getElementById('wd-columns-options').innerHTML=I18N[LANG].vHeaders.map((label,i)=>i<5?'':`<label><input type="checkbox" data-column="${i}" ${hiddenCols.has(i)?'':'checked'}>${esc(label)}</label>`).join('');
     document.getElementById('wd-theme').setAttribute('aria-label',text('配色主题','Color theme'));
     document.getElementById('wd-theme').innerHTML=Object.entries(THEMES).map(([v,l])=>`<option value="${v}">${l[LANG==='zh'?0:1]}</option>`).join('');document.getElementById('wd-theme').value=document.documentElement.dataset.wdTheme||'warm';
-    rowHints();freshness();help();updateMoreLabels();
+    rowHints();freshness();help();updateMoreLabels();riskBar();
   }
   const oldLang=setLang;
   setLang=function(lang){document.documentElement.lang=lang==='en'?'en':'zh-CN';labels();oldLang(lang);labels();renderVerticalHead();applyColumns();kpis();try{localStorage.setItem('wd-language',lang);}catch(_){}};
@@ -2544,6 +2661,17 @@ refreshStatusesFromRelay();
   if(DATA.preview){const badge=document.createElement('span');badge.id='wd-preview-label';document.querySelector('#topbar>div:first-child').appendChild(badge);}
   themeSelect.addEventListener('change',()=>{document.documentElement.dataset.wdTheme=themeSelect.value;try{localStorage.setItem('wd-inventory-theme',themeSelect.value);}catch(_){}});
   const fresh=document.createElement('div');fresh.id='wd-freshness';document.querySelector('.kpis').before(fresh);
+  const riskStrip=document.createElement('div');riskStrip.id='wd-risk-bar';riskStrip.setAttribute('aria-label','风险快捷筛选 / Risk quick filters');document.querySelector('.kpis').after(riskStrip);
+  riskStrip.addEventListener('click',e=>{
+    const button=e.target.closest('button');if(!button)return;
+    if(button.dataset.clearRisk){detailScope=null;detailScopeLabel='';quickRisk='';applyVerticalFilters();return;}
+    if(button.dataset.risk)openRiskDetails(button.dataset.risk);
+  });
+  document.querySelector('.kpis').addEventListener('click',e=>{if(e.target.closest('[data-open-alert]'))openRiskDetails('alert');});
+  document.querySelector('#wideTable tbody').addEventListener('click',e=>{
+    const button=e.target.closest('.wd-stock-signal');if(!button)return;
+    const row=rowByKey.get(button.dataset.rowKey);if(row)openRiskDetails('all',[row]);
+  });
   const tools=document.createElement('div');tools.className='wd-data-tools';tools.innerHTML='<select id="wd-quality" aria-label="数据维护 / Data quality"></select><select id="wd-actions" aria-label="补货跟进 / Replenishment"></select><details id="wd-columns"><summary id="wd-columns-label"></summary><div id="wd-columns-options"></div></details><button type="button" id="wd-trend"></button>';
   document.querySelector('#panel-vertical .table-wrap').before(tools);
   document.getElementById('wd-quality').addEventListener('change',e=>{quality=e.target.value;applyVerticalFilters();});
@@ -2562,11 +2690,15 @@ refreshStatusesFromRelay();
       body.style.transform=`translateX(${(left-rect.left)/scale}px)`;
     });});
     if(prefix==='v'){body.appendChild(document.getElementById('vSystem'));body.appendChild(document.getElementById('vAlert'));body.appendChild(tools);}
-    else body.appendChild(document.getElementById('hSub'));
+    else {
+      body.appendChild(document.getElementById('hSub'));
+      const categories=document.createElement('label');categories.className='wd-category-choice';categories.innerHTML='<input type="checkbox" id="wd-show-categories"><span id="wd-category-text"></span>';body.appendChild(categories);
+      const cb=categories.querySelector('input');cb.checked=showCategories;cb.addEventListener('change',()=>{showCategories=cb.checked;decorateWideStock();save();});
+    }
     const reset=document.createElement('button');reset.type='button';reset.className='btn-export';reset.id='wd-'+prefix+'-reset';toolbar.insertBefore(reset,toolbar.querySelector('.count-label'));
     reset.addEventListener('click',()=>{
       document.getElementById(prefix+'Search').value='';
-      if(prefix==='v') {document.getElementById('vSystem').value='';document.getElementById('vAlert').value='';quality='';action='';sort={col:null,dir:1};populateVerticalSelects();}
+      if(prefix==='v') {document.getElementById('vSystem').value='';document.getElementById('vAlert').value='';quality='';action='';quickRisk='';detailScope=null;detailScopeLabel='';sort={col:null,dir:1};populateVerticalSelects();}
       else {document.getElementById('hRegion').value=HG.default_region;document.getElementById('hSub').value='';populateHorizontalSelects();}
       const id=prefix+'Warehouse';multiSelectState[id]=new Set();populateMultiSelectOptions(id,Array.from(document.querySelectorAll('#'+id+' .ms-opt input')).map(el=>({v:el.value,l:multiSelectLabels[id]?.get(el.value)||el.value})),prefix==='v'?'vWarehouseAll':'hWarehouseAll');
       labels();prefix==='v'?applyVerticalFilters():applyHorizontalFilter();
