@@ -56,6 +56,13 @@
   #langToggle button { border:none; background:#fff; color:var(--muted); padding:7px 14px; font-size:12px;
             font-weight:700; cursor:pointer; }
   #langToggle button.active { background: var(--blue); color:#fff; }
+  #wd-top-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-shrink:0; }
+  #wd-source-link { display:inline-flex; align-items:center; justify-content:center; gap:5px;
+    min-height:30px; padding:4px 9px; border:1px solid var(--border); border-radius:7px;
+    background:var(--card); color:var(--text); font-size:11px; line-height:20px;
+    text-decoration:none; white-space:nowrap; }
+  #wd-source-link:hover { border-color:var(--muted); }
+  #wd-source-link:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
 
   .kpis { display:flex; gap:14px; padding: 18px 28px 0 28px; flex-wrap:wrap; }
   .kpi-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 18px;
@@ -449,6 +456,7 @@ html[lang="en"]{--sidebar-w:214px}
 #langToggle{flex:none;padding:2px}
 #langToggle button{padding:4px 8px;font-size:11px}
 #wd-theme{min-height:30px;min-width:84px;max-width:110px;font-size:11px;padding:4px 8px;flex:none}
+#wd-top-actions{margin-left:auto}
 #sidebar{padding:24px 13px 18px}
 #sidebar .brand{padding-inline:9px}
 .wordmark{font-size:27px}
@@ -519,8 +527,10 @@ td.name-cell{min-width:180px;max-width:260px;overflow:hidden;text-overflow:ellip
   #sidebar .nav-item{padding:11px 0;justify-content:center}
   .wd-sidebar-collapsed #sidebar{padding-inline:6px}
   #main{padding-inline:10px}
-  #topbar{margin-inline:-10px;min-height:54px;padding:9px 11px;gap:6px}
+  #topbar{margin-inline:-10px;min-height:54px;padding:9px 11px;gap:6px;flex-wrap:wrap}
   #topbar>div:first-child{gap:5px}
+  #wd-top-actions{gap:5px;flex-wrap:wrap;max-width:100%}
+  #wd-source-link{padding-inline:7px}
   #topbar h1{font-size:18px}
   #langToggle button{padding:4px 6px;font-size:11px}
   #wd-theme{min-width:74px;max-width:90px}
@@ -662,10 +672,10 @@ body{font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI","Ping
 .kpi-card .wd-alert-skus{letter-spacing:0}
 .panel-card{box-shadow:inset 0 1px var(--wd-rim),0 4px 18px var(--wd-soft-shadow);border-color:var(--line-strong)}
 .panel-toolbar{background-image:linear-gradient(180deg,var(--wd-sheen),transparent 95%);box-shadow:inset 0 1px var(--wd-rim)}
-.panel-toolbar input,.panel-toolbar select,.panel-toolbar .ms-select-btn,.panel-toolbar .btn-export,.wd-more>summary,#wd-theme,#langToggle button.active,.wd-data-tools select,.wd-data-tools button,.wd-data-tools summary{
+.panel-toolbar input,.panel-toolbar select,.panel-toolbar .ms-select-btn,.panel-toolbar .btn-export,.wd-more>summary,#wd-theme,#wd-source-link,#langToggle button.active,.wd-data-tools select,.wd-data-tools button,.wd-data-tools summary{
   background-image:linear-gradient(180deg,var(--wd-control-shine),transparent 85%);box-shadow:inset 0 1px var(--wd-rim),0 2px 4px var(--wd-soft-shadow);transition:border-color .16s,box-shadow .16s;
 }
-.panel-toolbar .btn-export:hover,.ms-select-btn:hover,.wd-more>summary:hover,#wd-theme:hover{box-shadow:inset 0 1px var(--wd-rim),0 3px 9px var(--wd-shadow)}
+.panel-toolbar .btn-export:hover,.ms-select-btn:hover,.wd-more>summary:hover,#wd-theme:hover,#wd-source-link:hover{box-shadow:inset 0 1px var(--wd-rim),0 3px 9px var(--wd-shadow)}
 .panel-toolbar input:focus,.panel-toolbar select:focus{box-shadow:inset 0 1px var(--wd-rim),0 0 0 2px color-mix(in srgb,var(--accent) 12%,transparent)}
 .ms-select-panel,.wd-more-body,.wd-info-popover,#wd-columns-options{background-image:linear-gradient(145deg,var(--wd-control-shine),transparent 52%);box-shadow:inset 0 1px var(--wd-rim),0 10px 28px var(--wd-shadow)}
 #wideTable thead tr:first-child>th,#vertTable thead th{box-shadow:inset 0 1px var(--wd-rim)}
@@ -2765,6 +2775,8 @@ const WD_RISK = (() => {
     document.getElementById('wd-columns-options').innerHTML=I18N[LANG].vHeaders.map((label,i)=>i<5?'':`<label><input type="checkbox" data-column="${i}" ${hiddenCols.has(i)?'':'checked'}>${esc(label)}</label>`).join('');
     document.getElementById('wd-theme').setAttribute('aria-label',text('配色主题','Color theme'));
     document.getElementById('wd-theme').innerHTML=Object.entries(THEMES).map(([v,l])=>`<option value="${v}">${l[LANG==='zh'?0:1]}</option>`).join('');document.getElementById('wd-theme').value=document.documentElement.dataset.wdTheme||'warm';
+    document.getElementById('wd-source-link-label').textContent=text('数据底表','Data sheet');
+    document.getElementById('wd-source-link').title=text('打开飞书数据底表：Forecast_Product_continuous update（新标签页）','Open Forecast_Product_continuous update in Feishu (new tab)');
     freshness();help();updateMoreLabels();riskBar();
   }
   const oldLang=setLang;
@@ -2781,7 +2793,13 @@ const WD_RISK = (() => {
   const THEMES={light:['云白','Cloud White'],dark:['曜黑','Obsidian'],warm:['燕麦','Oat'],'plaud-ivory':['橙白','Ivory'],'plaud-graphite':['石墨','Graphite'],'plaud-sage':['雾绿','Sage'],'plaud-midnight':['夜蓝','Midnight']};
   let theme='warm';try{theme=localStorage.getItem('wd-inventory-theme')||'warm';}catch(_){}
   if(!THEMES[theme]) theme='warm';document.documentElement.dataset.wdTheme=theme;
-  const themeSelect=document.createElement('select');themeSelect.id='wd-theme';document.getElementById('topbar').appendChild(themeSelect);
+  const themeSelect=document.createElement('select');themeSelect.id='wd-theme';
+  const topActions=document.createElement('div');topActions.id='wd-top-actions';
+  const sourceLink=document.createElement('a');sourceLink.id='wd-source-link';
+  sourceLink.href='https://nicebuild.feishu.cn/wiki/AzD4wKig0iks3Ukx2r0crYipnzw';
+  sourceLink.target='_blank';sourceLink.rel='noopener noreferrer';
+  sourceLink.innerHTML='<span id="wd-source-link-label"></span><span aria-hidden="true">↗</span>';
+  topActions.append(sourceLink,document.getElementById('langToggle'),themeSelect);document.getElementById('topbar').appendChild(topActions);
   if(DATA.preview){const badge=document.createElement('span');badge.id='wd-preview-label';document.querySelector('#topbar>div:first-child').appendChild(badge);}
   themeSelect.addEventListener('change',()=>{document.documentElement.dataset.wdTheme=themeSelect.value;try{localStorage.setItem('wd-inventory-theme',themeSelect.value);}catch(_){}});
   const fresh=document.createElement('div');fresh.id='wd-freshness';document.querySelector('.kpis').before(fresh);
